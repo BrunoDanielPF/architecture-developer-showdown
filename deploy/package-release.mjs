@@ -14,7 +14,7 @@ const files=[
 ].sort();
 const entries={};
 for(const file of files){const data=await readFile(file);entries[file]={sha256:createHash('sha256').update(data).digest('hex'),bytes:data.length};}
-const manifest={release,createdAt:new Date().toISOString(),site:'https://architecture-developer-showdown.brdanpe.tech/',validation:{tests:44,build:'passed',productionSmoke:'passed'},files:entries};
+const manifest={release,createdAt:new Date().toISOString(),site:'https://architecture-developer-showdown.brdanpe.tech/',validation:{tests:50,build:'passed',productionSmoke:'passed'},files:entries};
 await writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n');
 const tar=spawnSync('tar',['-czf',archivePath,...files],{stdio:'inherit'});if(tar.status!==0)throw new Error('Falha ao criar pacote.');
 const archive=await readFile(archivePath),info=await stat(archivePath);
