@@ -1,0 +1,12 @@
+{
+  "passed": [
+    "zoom moves board and preserves hand bounds",
+    "pan moves board and preserves hand bounds",
+    "recenter restores camera",
+    "protocol name and description visible",
+    "card drag and placement",
+    "round result survives advance and reload",
+    "766px and 390px without horizontal overflow"
+  ],
+  "browserErrors": []
+}

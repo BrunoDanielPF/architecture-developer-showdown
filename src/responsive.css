@@ -1,0 +1,76 @@
+/* Pages scroll naturally. Only the 3D viewport clips its own scene. */
+.home-shell{padding-inline:max(16px,env(safe-area-inset-left),calc((100vw - 1340px)/2));padding-bottom:env(safe-area-inset-bottom)}
+.home-header{padding-inline:0;height:auto;flex-wrap:wrap}
+.home-grid{padding-block:clamp(24px,5vh,65px);align-items:start}
+.home-story,.home-options>button>span,.lobby-seats>div>div{min-width:0}
+.home-panel,.lobby-panel{overflow-wrap:anywhere}
+.home-options>button>span{flex:1}
+.home-panel input,.home-panel select,.lobby-panel input{min-width:0}
+.home-panel button,.lobby-panel button{white-space:normal}
+.lobby-panel{margin-block:24px}
+.lobby-actions>button{flex:1 1 180px}
+.lobby-seats>div>div{flex:1}
+.seat-status{flex-shrink:0;max-width:100px;overflow-wrap:anywhere}
+.home-shell .brand{letter-spacing:.12em}
+.game-shell{min-height:620px}
+.game-shell .player-resources>strong,.board-toolbar strong{overflow-wrap:anywhere;min-width:0}
+.modal-scrim,.tutorial-scrim{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overflow-y:auto;overscroll-behavior:contain}
+.help-modal,.result-modal,.tutorial-panel{max-width:100%;max-height:calc(100dvh - 24px);min-height:0;overflow-y:auto;overflow-wrap:anywhere}
+html:has(.tutorial-scrim,.modal-scrim){overflow-y:hidden}
+.tutorial-panel footer{position:sticky;bottom:-30px;background:#1b3039;padding-block:12px;margin-top:18px;z-index:2}
+.tutorial-panel footer button{min-height:44px;white-space:normal;flex:1;min-width:0;overflow-wrap:normal}
+.tutorial-panel header .icon-button,.close,.toast button{min-width:44px;min-height:44px;align-items:center;justify-content:center}
+.lesson-progress button{height:24px;border-block:8px solid #1b3039;border-radius:0}
+.research-options{flex-wrap:wrap}
+.result-modal{width:min(520px,100%)}
+.result-actions{flex-wrap:wrap}
+.result-actions>button{flex:1 1 160px;white-space:normal}
+.result-categories>div{gap:12px;text-align:left}
+.result-categories strong{text-align:right;overflow-wrap:anywhere}
+.toast{width:max-content;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;bottom:max(12px,env(safe-area-inset-bottom));overflow-wrap:anywhere}
+.compact-market{display:none}
+@media(max-width:760px){
+ .home-panel{padding:20px}.home-grid{gap:24px}.home-story h1{font-size:clamp(28px,8vw,38px)}
+ .home-facts{gap:16px;flex-wrap:wrap}.home-options>button{gap:10px;padding:16px 12px}
+ .home-header{min-height:76px;gap:12px}.home-shell .brand{font-size:8px;gap:8px}.home-shell .brand strong{font-size:15px}
+ .lobby-panel{padding:18px}.lobby-code input{font-size:24px}.lobby-seats>div{gap:8px}.lobby-seats strong{font-size:14px}
+ .home-shell input,.home-shell select,.inspector select{font-size:16px}
+ .home-shell .text-button{min-height:44px}.tutorial-panel footer{bottom:-22px}
+ .lesson-visual{flex-wrap:wrap}.lesson-visual>span{flex:1 1 120px}.result-modal,.help-modal{padding:22px}
+ .example-heading{flex-wrap:wrap}.example-resources,.example-moves{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:360px){
+ .tutorial-panel{padding:16px}.tutorial-panel footer{bottom:-16px;gap:8px}.tutorial-panel footer button{padding:10px 6px;gap:6px}
+ .example-resources,.example-moves{grid-template-columns:1fr}.example-resources .meter-explanation{min-height:0}.action-pips i{min-width:0;overflow-wrap:normal}
+}
+/* A narrow or short screen uses document flow instead of overlapping HUD panels. */
+@media(max-width:760px),(max-height:500px){
+ main.game-shell{height:auto;min-height:100dvh;overflow:visible;display:flex;flex-direction:column;gap:12px;padding:0 12px max(20px,env(safe-area-inset-bottom))}
+ main.game-shell>header{position:relative;inset:auto;height:auto;min-height:64px;padding:10px 0;gap:12px;flex-wrap:wrap;order:0;z-index:50}
+ .game-shell .match-edition{display:none}.game-shell .header-actions{gap:8px;margin-left:auto}.game-shell .header-actions button{min-height:44px;min-width:44px}
+ main.game-shell .play-area{display:contents}
+ main.game-shell .round-rail{position:sticky;top:0;inset-inline:auto;bottom:auto;transform:none;width:100%;padding:8px 4px;flex-direction:row;gap:8px;border:1px solid #48708b55;background:#0c1d2df5;order:1;z-index:48}
+ .round-rail .rail-heading{display:none}.round-rail ol{flex-direction:row;margin:0;gap:3px;min-width:0}.round-rail ol:before{left:5%;right:5%;top:15px;bottom:auto;width:auto;height:2px}.round-rail li{min-width:0;flex:1;min-height:0;gap:5px}.round-rail .rail-node{width:27px;height:27px;font-size:12px}.round-rail .rail-label{font-size:5px}
+ .round-rail .round-clock{width:54px;flex-shrink:0;border-top:0;border-left:1px solid #416078;padding:0 0 0 7px;gap:2px}.round-clock>svg,.clock-track{display:none}.round-clock strong{font-size:24px}.round-clock small{font-size:6px}
+ main.game-shell .sync-dock{position:relative;inset:auto;transform:none;width:100%;order:2;padding:12px;clip-path:none}.sync-dock .sync-phase{font-size:9px}.sync-dock .sync-players strong{font-size:12px}.sync-dock .sync-players small{font-size:9px}.sync-dock .phase-circuit span{font-size:9px}.sync-dock p{display:block;font-size:10px}
+ main.game-shell .telemetry-strip{position:relative;inset:auto;transform:none;width:100%;min-width:0;height:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:12px;order:3}.game-shell .telemetry-strip small{font-size:9px;white-space:normal}.game-shell .telemetry-strip strong{font-size:18px}
+ main.game-shell .scenario-panel,main.game-shell.showdown-shell .scenario-panel{position:relative;inset:auto;width:100%;max-height:none;overflow:visible;clip-path:none;padding:16px;order:4}.scenario-current>p,.scenario-current>p:not(.eyebrow){font-size:12px}.scenario-panel .signals li{font-size:11px}
+ main.game-shell .board-section{position:relative;inset:auto;display:flex;flex-direction:column;height:auto;overflow:visible;width:100%;order:5}
+ main.game-shell .board-toolbar{position:relative;inset:auto;transform:none;min-width:0;width:100%;height:auto;min-height:48px;flex-wrap:wrap;gap:8px;padding:8px}.board-toolbar>div{min-width:0;flex-wrap:wrap}.board-toolbar .segmented{flex-wrap:wrap}.board-toolbar button{min-height:44px}
+ main.game-shell .table-viewport{position:relative;inset:auto;width:100%;height:440px;min-height:0;isolation:isolate;border:1px solid #48708b55}
+ main.game-shell .table-controls{left:10px;bottom:10px;right:10px}.table-controls button{min-height:44px;font-size:12px}
+ main.game-shell .hand-area{position:relative;inset:auto;height:auto;display:flex;flex-direction:column;gap:16px;pointer-events:auto;padding:14px;background:#102435;border:1px solid #48708b55;order:6}
+ main.game-shell .player-resources{position:relative;inset:auto;width:100%;grid-template-columns:34px minmax(0,1fr) auto auto;padding:10px;clip-path:none;box-shadow:none}.player-resources .deck-counter{grid-column:1/-1}.player-resources .resource-help{min-height:44px}
+ main.game-shell .hand-content{position:relative;inset:auto;min-width:0}.hand-heading{flex-wrap:wrap;margin-bottom:12px;justify-content:flex-start}.hand-heading small{font-size:11px}
+ .hand-content .hand-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-height:0;overflow:visible;padding:0}
+ .hand-content .game-card{width:100%;min-width:0;max-width:none;min-height:185px;touch-action:pan-y;cursor:pointer}.hand-content .game-card>strong{font-size:13px}.hand-content .game-card>p{font-size:11px}.hand-content .card-top{font-size:9px}.hand-content .card-top b{font-size:14px}.hand-content .card-bottom{font-size:9px}
+ main.game-shell .turn-actions{position:relative;inset:auto;width:100%;gap:10px;padding:0;align-items:stretch}.game-shell .turn-actions>.eyebrow,.game-shell .turn-actions>small{display:block}.game-shell .turn-actions button{min-width:0;min-height:44px;font-size:13px}.game-shell .turn-actions>small{font-size:10px}
+ main.game-shell .market-panel,main.game-shell.showdown-shell .market-panel{position:relative;inset:auto;width:100%;max-height:none;overflow:visible;padding:16px;display:block;order:7}.market-panel>.panel-heading,.market-panel>.market-description{display:flex}.market-panel>.market-description{font-size:12px;display:block}.compact-market{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.compact-market button{display:flex;flex-direction:column;gap:10px;padding:14px 10px;min-width:0;border:1px solid #638da0;background:#183044;text-align:left;border-radius:6px}.compact-market button small{font-size:11px;color:#adc4d3}.backlog button{min-height:44px;flex-wrap:wrap}
+ main.game-shell .inspector,main.game-shell .card-inspector{position:fixed;top:auto;bottom:max(12px,env(safe-area-inset-bottom));left:12px;right:12px;transform:none;width:auto;max-height:calc(100dvh - 100px);padding:20px;display:block;z-index:110;overscroll-behavior:contain;scroll-padding-block:14px}.inspector h3,.card-inspector .card-explanation h3{margin-right:36px}.inspector .config-fields{grid-template-columns:1fr;gap:18px}.game-shell .card-inspector .config-fields{grid-template-columns:1fr}.inspector .config-fields label{font-size:12px}.inspector input[type=range]{height:24px;margin-top:8px}.inspector .primary,.inspector .secondary,.inspector .text-button{min-height:44px;font-size:12px}
+ main.game-shell .placement-tip{position:relative;inset:auto;transform:none;max-width:100%;width:100%;margin-top:8px;font-size:12px}.placement-tip small{font-size:10px}
+ main.game-shell .round-observations,main.game-shell .causal-panel{position:relative;inset:auto;transform:none;min-width:0;width:100%;max-width:none;max-height:none;order:8;font-size:12px;padding:16px}.causal-panel[open]{display:flex;flex-direction:column}
+ main.game-shell .connection-banner{position:relative;inset:auto;transform:none;width:100%;order:1;overflow-wrap:anywhere}
+ main.game-shell .notices{position:relative;inset:auto;order:9}.phase-reveal{position:fixed;top:80px;left:12px;right:12px;transform:none;max-width:none;width:auto;z-index:100}
+ .seat-curtain{position:fixed;inset:64px 0 0;padding:24px;overflow:auto;justify-content:safe center}.seat-curtain h2{font-size:25px}.seat-curtain p{overflow-wrap:anywhere}.seat-covered .board-section{visibility:hidden}
+ .showdown-shell .category-nav button{min-height:44px;font-size:12px}.showdown-shell .market-panel>.primary{min-height:44px;font-size:13px}
+}

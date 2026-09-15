@@ -1,0 +1,473 @@
+{
+  "kind": "automated-functional-playtests-not-human-fun-validation",
+  "matches": 24,
+  "totalCommands": 366,
+  "buys": 109,
+  "distinctGraphs": 48,
+  "incidentTypes": [
+    "Exaustão de conexões",
+    "Falha em cascata",
+    "Backlog de fila",
+    "Disputa de estoque",
+    "Cache stampede",
+    "Dados desatualizados"
+  ],
+  "report": [
+    {
+      "seed": "playtest-0",
+      "commands": 34,
+      "graphs": [
+        {
+          "nodes": 6,
+          "edges": 6
+        },
+        {
+          "nodes": 6,
+          "edges": 5
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "7614380e"
+    },
+    {
+      "seed": "playtest-1",
+      "commands": 39,
+      "graphs": [
+        {
+          "nodes": 6,
+          "edges": 6
+        },
+        {
+          "nodes": 6,
+          "edges": 5
+        }
+      ],
+      "wins": [
+        3,
+        3
+      ],
+      "resultHash": "07c1bfe5"
+    },
+    {
+      "seed": "playtest-2",
+      "commands": 37,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 4
+        },
+        {
+          "nodes": 6,
+          "edges": 5
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "9e29a6be"
+    },
+    {
+      "seed": "playtest-3",
+      "commands": 33,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 4
+        },
+        {
+          "nodes": 5,
+          "edges": 4
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "71d876c4"
+    },
+    {
+      "seed": "playtest-4",
+      "commands": 40,
+      "graphs": [
+        {
+          "nodes": 7,
+          "edges": 7
+        },
+        {
+          "nodes": 5,
+          "edges": 4
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "3b216540"
+    },
+    {
+      "seed": "playtest-5",
+      "commands": 39,
+      "graphs": [
+        {
+          "nodes": 6,
+          "edges": 6
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        3,
+        3
+      ],
+      "resultHash": "1c430cff"
+    },
+    {
+      "seed": "playtest-6",
+      "commands": 39,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 4
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "0cd96936"
+    },
+    {
+      "seed": "playtest-7",
+      "commands": 38,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 4
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "9ddf8b21"
+    },
+    {
+      "seed": "playtest-8",
+      "commands": 35,
+      "graphs": [
+        {
+          "nodes": 6,
+          "edges": 5
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        2,
+        3
+      ],
+      "resultHash": "cc4041a8"
+    },
+    {
+      "seed": "playtest-9",
+      "commands": 33,
+      "graphs": [
+        {
+          "nodes": 4,
+          "edges": 3
+        },
+        {
+          "nodes": 5,
+          "edges": 4
+        }
+      ],
+      "wins": [
+        2,
+        4
+      ],
+      "resultHash": "3725728f"
+    },
+    {
+      "seed": "playtest-10",
+      "commands": 33,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 5
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "07f754ed"
+    },
+    {
+      "seed": "playtest-11",
+      "commands": 39,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 5
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        3,
+        3
+      ],
+      "resultHash": "03dc9ab3"
+    },
+    {
+      "seed": "playtest-12",
+      "commands": 37,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 5
+        },
+        {
+          "nodes": 6,
+          "edges": 5
+        }
+      ],
+      "wins": [
+        3,
+        3
+      ],
+      "resultHash": "b1a9139a"
+    },
+    {
+      "seed": "playtest-13",
+      "commands": 33,
+      "graphs": [
+        {
+          "nodes": 4,
+          "edges": 3
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        2,
+        4
+      ],
+      "resultHash": "0d14040f"
+    },
+    {
+      "seed": "playtest-14",
+      "commands": 35,
+      "graphs": [
+        {
+          "nodes": 8,
+          "edges": 8
+        },
+        {
+          "nodes": 5,
+          "edges": 4
+        }
+      ],
+      "wins": [
+        2,
+        4
+      ],
+      "resultHash": "c1914574"
+    },
+    {
+      "seed": "playtest-15",
+      "commands": 41,
+      "graphs": [
+        {
+          "nodes": 8,
+          "edges": 7
+        },
+        {
+          "nodes": 5,
+          "edges": 4
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "e6f02723"
+    },
+    {
+      "seed": "playtest-16",
+      "commands": 36,
+      "graphs": [
+        {
+          "nodes": 7,
+          "edges": 7
+        },
+        {
+          "nodes": 5,
+          "edges": 4
+        }
+      ],
+      "wins": [
+        3,
+        3
+      ],
+      "resultHash": "623a6d1e"
+    },
+    {
+      "seed": "playtest-17",
+      "commands": 41,
+      "graphs": [
+        {
+          "nodes": 8,
+          "edges": 8
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "eda0dc27"
+    },
+    {
+      "seed": "playtest-18",
+      "commands": 38,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 5
+        },
+        {
+          "nodes": 5,
+          "edges": 4
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "a93cfb80"
+    },
+    {
+      "seed": "playtest-19",
+      "commands": 38,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 4
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        4,
+        2
+      ],
+      "resultHash": "eb6b83c7"
+    },
+    {
+      "seed": "playtest-20",
+      "commands": 38,
+      "graphs": [
+        {
+          "nodes": 6,
+          "edges": 5
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        3,
+        3
+      ],
+      "resultHash": "0088efdf"
+    },
+    {
+      "seed": "playtest-21",
+      "commands": 42,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 4
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        2,
+        4
+      ],
+      "resultHash": "5d6f779a"
+    },
+    {
+      "seed": "playtest-22",
+      "commands": 34,
+      "graphs": [
+        {
+          "nodes": 6,
+          "edges": 5
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        3,
+        3
+      ],
+      "resultHash": "c74af04a"
+    },
+    {
+      "seed": "playtest-23",
+      "commands": 42,
+      "graphs": [
+        {
+          "nodes": 5,
+          "edges": 4
+        },
+        {
+          "nodes": 4,
+          "edges": 3
+        }
+      ],
+      "wins": [
+        3,
+        3
+      ],
+      "resultHash": "5640d13d"
+    }
+  ]
+}

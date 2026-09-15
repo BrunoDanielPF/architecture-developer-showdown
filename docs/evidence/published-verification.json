@@ -1,0 +1,11 @@
+{
+  "release": "architecture-developer-showdown-20260910-165737",
+  "checkedAt": "2026-09-10T20:19:50.301Z",
+  "site": "https://architecture-developer-showdown.brdanpe.tech",
+  "checks": [
+    "HTML, CSS and JS hashes match the release; HTTPS security headers present",
+    "HTTP redirects to HTTPS; EngenhaLab remains accessible",
+    "Room creation/join, individual credentials, readiness, host start, private projections, five rounds and replay export passed"
+  ],
+  "validationMatch": "656bde00c0c9e22a"
+}

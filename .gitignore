@@ -1,0 +1,9 @@
+node_modules/
+dist/
+data/
+data-ui-feedback/
+data-ui-redesign/
+test-results/
+playwright-report/
+*.log
+.env

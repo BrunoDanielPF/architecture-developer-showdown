@@ -1,0 +1,107 @@
+{
+  "release": "architecture-developer-showdown-20260910-165737",
+  "createdAt": "2026-09-10T16:57:37.946684+00:00",
+  "files": {
+    "deploy/architecture-developer-showdown.service": {
+      "sha256": "e8c3f86d0d732d6283dd80297e597b224409538cfc2be7937474411a31665ca6",
+      "bytes": 573
+    },
+    "deploy/install.sh": {
+      "sha256": "5a72d0de29a61cebca5d780b1323c3a178db95e9ae91cac96c98df9fb1da54f1",
+      "bytes": 1890
+    },
+    "deploy/nginx-http.conf": {
+      "sha256": "fa91690c509507678b6678007a59f6113c4eb5edd96c6bbadec96ba062910d14",
+      "bytes": 1279
+    },
+    "deploy/nginx-https.conf": {
+      "sha256": "da5ceef5f54a95e36f2a4b2b4c65295e1e4abef0e4b9711c3dd81028ac8b2b06",
+      "bytes": 1877
+    },
+    "deploy/update.sh": {
+      "sha256": "2906f2ade03c7b1ee086642e81dd5c264e3a33b7590bfd50935d1de22f77d385",
+      "bytes": 2538
+    },
+    "dist/assets/index-CHKoYXv3.js": {
+      "sha256": "09bd6f81217753e4915efc05d7bf3ff2d61e300b37be814cfc9160875d9dc6d7",
+      "bytes": 288674
+    },
+    "dist/assets/index-DX9_Yww7.css": {
+      "sha256": "22656fe9c218479cfac7eaecb0676c1675c66619fd5ca5a826e75d60e3c0f924",
+      "bytes": 77749
+    },
+    "dist/assets/Table-BcOzbZ6M.js": {
+      "sha256": "f81b5522e16cc06418541504f9b5a90ebf076905093b825e9d8fecae1eef1cde",
+      "bytes": 919558
+    },
+    "dist/index.html": {
+      "sha256": "fba7181d27ad43b67972a5c8e0781cd96ea11f9b99bff173cc5ca398f437b733",
+      "bytes": 423
+    },
+    "package-lock.json": {
+      "sha256": "b72f33ceebe413b00406267f84432e19a01e715050d31c9a175f288d9a77e60e",
+      "bytes": 154454
+    },
+    "package.json": {
+      "sha256": "994c169f2666af66bd0b7eee90f38f447f665c1a19dfa3d87f51f0ddb65af39f",
+      "bytes": 1167
+    },
+    "packages/content/catalog.ts": {
+      "sha256": "be3c4e308789c63a3663ba6081ec9093ed0bd0222174191467abf38847363d44",
+      "bytes": 14317
+    },
+    "packages/domain/random.ts": {
+      "sha256": "c34ef112924a627dfaf9cbb785e85f7baf98ca833f792a348d8ac45c32d8f857",
+      "bytes": 774
+    },
+    "packages/domain/types.ts": {
+      "sha256": "09033d3074cb087c0f717c285ab41e2ce3b361fe4a93dc3c0838da4e63a98a6c",
+      "bytes": 4697
+    },
+    "packages/rules/index.ts": {
+      "sha256": "d406ecc745fb20d07fe07524b12cf9e00cd84a67eec92dcba5420bc152f5da94",
+      "bytes": 12388
+    },
+    "packages/session/index.ts": {
+      "sha256": "4ac882192c53238c69cbe10316073568d10fcb992db0ca61baef95f135241dbe",
+      "bytes": 8487
+    },
+    "packages/simulation/index.ts": {
+      "sha256": "a763e2f1ba96c77adef026b8072cdd1c932d2f8cea1a71fe2f8d36c1d2a537be",
+      "bytes": 17013
+    },
+    "packages/simulation/showdown.ts": {
+      "sha256": "edc1fe51be187626911bfc338c72827838b13392fe3c0a34a0ffe5f596a69b95",
+      "bytes": 4983
+    },
+    "packages/world/index.ts": {
+      "sha256": "e4e5aac946c1ba30db48a2242540b22a6fa5a296e25337d73e0b5091ff1c25b5",
+      "bytes": 1168
+    },
+    "server/app.ts": {
+      "sha256": "b25bd766cba749556883a9735dfa15b82c4469e72dd8e2c07707407e65be8017",
+      "bytes": 10589
+    },
+    "server/index.ts": {
+      "sha256": "9e510b1ed4285fa9051dad66cf1280552b4ee194833c47ec8b674f05c04ed510",
+      "bytes": 844
+    },
+    "server/lobby.ts": {
+      "sha256": "ae4759c0d437629bcc702ab8e5a2f597ed8ab7a221fa39fd2b84f811fd54530c",
+      "bytes": 1558
+    },
+    "server/round-clock.ts": {
+      "sha256": "a09f1e5e1bfd25946e074f15e32180ae6fc6674489ccab0f8de4efafb36fb043",
+      "bytes": 1074
+    },
+    "tests/production-smoke.ts": {
+      "sha256": "34a844f2228f86d82698b66dceadbc78129a3d009b9b03f4f20c3f2ac63ed927",
+      "bytes": 1036
+    }
+  },
+  "tests": {
+    "passed": 37,
+    "build": "passed"
+  },
+  "site": "https://architecture-developer-showdown.brdanpe.tech/"
+}

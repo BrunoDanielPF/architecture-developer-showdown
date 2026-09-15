@@ -1,0 +1,40 @@
+[
+  {
+    "actions": [
+      {
+        "bottom": 430.8000183105469,
+        "text": "Confirmar prontidão",
+        "top": 387.8000183105469
+      },
+      {
+        "bottom": 485.8000183105469,
+        "text": " Iniciar partida",
+        "top": 442.8000183105469
+      }
+    ],
+    "docWidth": 375,
+    "height": 667,
+    "screen": "Lobby público móvel",
+    "scroll": 358.3999938964844,
+    "width": 390
+  },
+  {
+    "actions": [
+      {
+        "bottom": 442.8000183105469,
+        "text": "Confirmar prontidão",
+        "top": 399.8000183105469
+      },
+      {
+        "bottom": 442.8000183105469,
+        "text": " Iniciar partida",
+        "top": 399.8000183105469
+      }
+    ],
+    "docWidth": 1351,
+    "height": 600,
+    "screen": "Lobby público notebook",
+    "scroll": 315.20001220703125,
+    "width": 1366
+  }
+]

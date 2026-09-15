@@ -1,0 +1,171 @@
+[
+  {
+    "contentWidth": 279,
+    "footerBottom": 555.2000045776367,
+    "footerTop": 477.6000061035156,
+    "height": 568,
+    "panelWidth": 279,
+    "screen": "Uma loja. Duas arquiteturas.",
+    "width": 320
+  },
+  {
+    "contentWidth": 279,
+    "footerBottom": 555.2000045776367,
+    "footerTop": 477.6000061035156,
+    "height": 568,
+    "panelWidth": 279,
+    "screen": "Conheça suas cartas",
+    "width": 320
+  },
+  {
+    "contentWidth": 279,
+    "footerBottom": 555.2000045776367,
+    "footerTop": 477.6000061035156,
+    "height": 568,
+    "panelWidth": 279,
+    "screen": "EC é esforço. Ação é uma jogada.",
+    "width": 320
+  },
+  {
+    "contentWidth": 279,
+    "footerBottom": 555.2000045776367,
+    "footerTop": 477.6000061035156,
+    "height": 568,
+    "panelWidth": 279,
+    "screen": "O dinheiro mede outro custo",
+    "width": 320
+  },
+  {
+    "contentWidth": 279,
+    "footerBottom": 555.2000045776367,
+    "footerTop": 477.6000061035156,
+    "height": 568,
+    "panelWidth": 279,
+    "screen": "Construa relações na mesa",
+    "width": 320
+  },
+  {
+    "contentWidth": 279,
+    "footerBottom": 555.2000045776367,
+    "footerTop": 477.6000061035156,
+    "height": 568,
+    "panelWidth": 279,
+    "screen": "Dispute o mercado. Planeje a reserva.",
+    "width": 320
+  },
+  {
+    "contentWidth": 279,
+    "footerBottom": 555.2000045776367,
+    "footerTop": 477.6000061035156,
+    "height": 568,
+    "panelWidth": 279,
+    "screen": "45 segundos. Decisões simultâneas.",
+    "width": 320
+  },
+  {
+    "contentWidth": 279,
+    "footerBottom": 555.2000045776367,
+    "footerTop": 477.6000061035156,
+    "height": 568,
+    "panelWidth": 279,
+    "screen": "Leia sinais. Compare no Showdown.",
+    "width": 320
+  },
+  {
+    "contentWidth": 279,
+    "footerBottom": 555.2000045776367,
+    "footerTop": 477.6000061035156,
+    "height": 568,
+    "panelWidth": 279,
+    "screen": "Convide alguém para a mesa",
+    "width": 320
+  },
+  {
+    "docWidth": 768,
+    "height": 1024,
+    "panels": [
+      {
+        "clientWidth": 153,
+        "contentWidth": 153,
+        "name": "scenario-panel",
+        "rect": {
+          "bottom": 530.3999938964844,
+          "height": 415.3999938964844,
+          "left": 13,
+          "right": 168,
+          "top": 115,
+          "width": 155,
+          "x": 13,
+          "y": 115
+        }
+      },
+      {
+        "clientWidth": 268,
+        "contentWidth": 268,
+        "name": "board-toolbar",
+        "rect": {
+          "bottom": 109,
+          "height": 34,
+          "left": 218.27500915527344,
+          "right": 488.27500915527344,
+          "top": 75,
+          "width": 270,
+          "x": 218.27500915527344,
+          "y": 75
+        }
+      },
+      {
+        "clientWidth": 173,
+        "contentWidth": 173,
+        "name": "market-panel",
+        "rect": {
+          "bottom": 600.8000183105469,
+          "height": 485.8000183105469,
+          "left": 514,
+          "right": 689,
+          "top": 115,
+          "width": 175,
+          "x": 514,
+          "y": 115
+        }
+      }
+    ],
+    "screen": "Showdown tablet",
+    "width": 768
+  },
+  {
+    "button": {
+      "bottom": 274.27499771118164,
+      "height": 43.20000076293945,
+      "left": 508.2625122070313,
+      "right": 782.0000305175781,
+      "top": 231.0749969482422,
+      "width": 273.7375183105469,
+      "x": 508.2625122070313,
+      "y": 231.0749969482422
+    },
+    "docWidth": 829,
+    "height": 390,
+    "screen": "Preparação local horizontal",
+    "scroll": 537.5999755859375,
+    "width": 844
+  },
+  {
+    "actions": {
+      "bottom": 1058.0000228881836,
+      "height": 126.5999984741211,
+      "left": 1635,
+      "right": 1812,
+      "top": 931.4000244140624,
+      "width": 177,
+      "x": 1635,
+      "y": 931.4000244140624
+    },
+    "docWidth": 1920,
+    "height": 1080,
+    "mobileCards": 0,
+    "physicalCards": 5,
+    "screen": "Preparação desktop",
+    "width": 1920
+  }
+]

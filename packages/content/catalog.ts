@@ -1,0 +1,70 @@
+import type { Card, Field, Graph, Scenario, World } from '../domain/types';
+const field=(label:string,min:number,max:number,value:number,unit='',step=1):Field=>({label,min,max,default:value,unit,step});
+const card=(id:string,name:string,family:Card['family'],kind:Card['kind'],ec:number,infra:number,mechanism:string,tradeoff:string,extra:Partial<Card>={}):Card=>({id,name,family,kind,ec,infra,acquisition:1,mechanism,tradeoff,fields:{},...extra});
+export const CARDS:Card[]=[
+ card('cache','Cache','data','node',3,140,'Desvia leituras reutilizáveis antes do destino.','TTL alto reduz demanda, mas aumenta leituras desatualizadas.',{nodeKind:'cache',fields:{ttl:field('TTL',5,300,45,'s',5),memory:field('Memória',1,8,2,'GB')}}),
+ card('replica','Read Replica','data','upgrade',3,180,'Cria um nó de réplica e divide leituras entre ele e o primário.','Somente leituras roteadas usam a réplica; replicação introduz atraso.',{targets:['database'],fields:{split:field('Leituras para réplica',0,90,60,'%',10)}}),
+ card('queue','Queue','async','node',3,100,'Aceita trabalho fora do caminho síncrono.','Requer Worker conectado; aceitação rápida não garante conclusão.',{nodeKind:'queue',fields:{retention:field('Retenção',30,300,120,'s',30)}}),
+ card('worker','Worker','compute','node',2,140,'Consome tarefas de uma fila e chama os destinos seguintes.','Vazão insuficiente acumula backlog; entregas podem ser repetidas.',{nodeKind:'worker',targets:['queue'],fields:{instances:field('Consumidores',1,4,1,'',1)}}),
+ card('scale','Escala horizontal','compute','upgrade',3,180,'Adiciona instâncias ao serviço selecionado.','Instâncias precisam de distribuição via Load Balancer.',{targets:['api'],fields:{instances:field('Instâncias',2,5,2)}}),
+ card('balancer','Load Balancer','compute','node',2,90,'Distribui tráfego entre instâncias elegíveis.','Com apenas uma instância, adiciona custo e um hop.',{nodeKind:'balancer'}),
+ card('timeout','Timeout','resilience','policy',1,0,'Limita espera de uma chamada síncrona.','Pode interromper operações que ainda terminariam.',{targets:['edge'],fields:{timeout:field('Limite de espera',200,8000,1800,'ms',100)}}),
+ card('retry','Retry','resilience','policy',1,10,'Repete chamadas após falhas transitórias.','Amplifica carga e duplicidade; exige limite e backoff.',{targets:['edge'],fields:{retries:field('Tentativas adicionais',0,4,1),backoff:field('Backoff',0,2000,400,'ms',100)}}),
+ card('breaker','Circuit Breaker','resilience','policy',2,20,'Abre o circuito quando a dependência excede o limiar de falhas.','Reduz chamadas, mas desloca operações para fallback ou rejeição.',{targets:['edge'],fields:{threshold:field('Limiar de erros',5,50,10,'%',5),fallback:field('Operações degradáveis',0,80,40,'%',10)}}),
+ card('rate','Rate Limit','security','policy',2,35,'Limita a demanda que atravessa o alvo.','Limites globais também descartam tráfego legítimo.',{targets:['api','balancer','edge'],fields:{limit:field('Limite',200,8000,2400,'req/s',200),identity:field('Chave: 0 global · 1 identidade',0,1,1)}}),
+ card('waf','WAF','security','policy',2,110,'Filtra padrões maliciosos no trecho coberto.','Não cobre caminhos alternativos; rigor alto gera falsos positivos.',{targets:['api','balancer','edge'],fields:{strictness:field('Rigor',1,3,2)}}),
+ card('index','Índice','data','upgrade',2,70,'Reduz trabalho de leitura no banco.','Manter índices aumenta trabalho de escrita e custo.',{targets:['database'],fields:{coverage:field('Cobertura de consultas',20,90,60,'%',10)}}),
+ card('pool','Connection Pool','operation','upgrade',1,30,'Limita conexões simultâneas ao banco.','Pool pequeno enfileira; pool grande pode esgotar conexões.',{targets:['api','worker'],fields:{poolSize:field('Conexões',10,200,80,'',10)}}),
+ card('observe','Observability','operation','upgrade',2,60,'Expõe métricas de capacidade, fila e saturação.','Não aumenta capacidade; há custo de coleta.',{targets:['api','worker','database']}),
+ card('idempotency','Idempotency Key','operation','upgrade',2,45,'Deduplica escritas repetidas no alvo.','Tem custo de armazenamento e verificação por operação.',{targets:['api','worker','database']}),
+ card('research','Tech Research','operation','action',1,0,'Revela três cartas privadas: escolha uma e descarte duas.','Consome ação e EC; não altera o mercado ou o cenário.'),
+ card('cdn','CDN','data','node',3,150,'Entrega leituras públicas na borda.','Conteúdo dinâmico e escrita seguem para a origem.',{nodeKind:'cdn',fields:{ttl:field('TTL público',5,300,60,'s',5),memory:field('Cache de borda',1,8,4,'GB')}}),
+ card('multi-az','Multi-AZ','resilience','upgrade',4,260,'Replica o alvo entre zonas com failover.','Aumenta custo e latência de escrita; não cobre outras dependências.',{targets:['api','database','worker'],fields:{failover:field('Tempo de failover',1,20,4,'s')}}),
+ card('grpc','gRPC','communication','protocol',1,0,'Reduz overhead entre serviços compatíveis.','Contrato mais complexo; a dependência continua síncrona.',{targets:['edge']}),
+ card('websocket','WebSocket','communication','protocol',2,45,'Mantém um canal de conexão para atualizações.','Conexões persistentes consomem capacidade de memória.',{targets:['edge']}),
+ card('compression','Compression','communication','policy',1,15,'Reduz custo de transporte e payload no trecho.','Comprimir consome CPU.',{targets:['edge']}),
+ card('bulkhead','Bulkhead','resilience','policy',2,40,'Isola parte dos recursos de uma chamada lenta.','Recursos reservados ficam indisponíveis para outros caminhos.',{targets:['edge'],fields:{isolation:field('Recursos isolados',20,80,60,'%',10)}}),
+ card('backpressure','Backpressure','async','policy',1,0,'Limita a entrada de uma fila ao consumo sustentável.','Pode rejeitar novas tarefas durante picos.',{targets:['queue'],fields:{admission:field('Admissão máxima',100,1600,800,'req/s',100)}}),
+ card('dlq','Dead Letter Queue','async','upgrade',2,55,'Retira mensagens que excederam o limite de tentativas.','Preserva capacidade do consumidor, mas deixa tarefas incompletas.',{targets:['queue']}),
+ card('lock','Controle de concorrência','data','upgrade',2,50,'Serializa escritas concorrentes no mesmo recurso.','Hot keys geram contenção e latência.',{targets:['database'],fields:{locking:field('Proteção de escritas',20,100,80,'%',10)}}),
+ card('iam','IAM Policy','security','upgrade',2,30,'Restringe operações privilegiadas no recurso.','Não remove carga maliciosa que já chegou ao serviço.',{targets:['database','storage','worker']}),
+ card('mtls','mTLS','security','policy',2,40,'Autentica o transporte entre serviços.','Não substitui autorização nem protege entradas públicas.',{targets:['edge']}),
+ card('health','Health Checks','operation','upgrade',1,25,'Reduz tempo de detecção e recuperação de instâncias.','Sondas têm custo e não criam redundância.',{targets:['api','database','worker','balancer']}),
+ card('trace','Distributed Tracing','operation','upgrade',2,75,'Revela caminhos causais e tempos por trecho.','Não remove gargalos; aumenta instrumentação.',{targets:['api','worker']}),
+ card('storage','Object Storage','data','node',2,65,'Serve a fração de objetos públicos no fluxo roteado.','Só 35% das leituras do case são objetos; não executa consultas transacionais.',{nodeKind:'storage'}),
+ card('autoscale','Auto Scaling','compute','upgrade',3,100,'Ajusta instâncias sob demanda, dentro do limite configurado.','Precisa de distribuição de tráfego; escala tem custo recorrente.',{targets:['api'],fields:{instances:field('Limite de instâncias',2,5,3)}}),
+ card('refactor','Refactor','operation','action',1,0,'Remove um componente opcional e reconecta seus vizinhos.','Consome esforço e remove políticas anexadas ao componente.',{targets:['optional']})
+];
+export const CATALOG=Object.fromEntries(CARDS.map(c=>[c.id,c]));
+export const CORE=CARDS.slice(0,16).map(c=>c.id);
+export const SPECIALTIES:Record<string,{name:string;description:string;cards:string[]}>= {
+ balanced:{name:'Sistemas enxutos',description:'Eficiência, dados e controle de demanda.',cards:['cdn','grpc','compression','lock','iam','health','bulkhead','backpressure']},
+ resilient:{name:'Operação resiliente',description:'Isolamento, recuperação e processamento assíncrono.',cards:['multi-az','bulkhead','backpressure','dlq','iam','mtls','health','trace']},
+ distributed:{name:'Escala distribuída',description:'Distribuição, comunicação e capacidade elástica.',cards:['cdn','storage','grpc','websocket','autoscale','multi-az','health','mtls']}
+};
+export const defaults=(id:string)=>Object.fromEntries(Object.entries(CATALOG[id].fields).map(([key,f])=>[key,f.default]));
+export const BASE_WORLD:World={reads:380,writes:45,updateRate:.015,hot:.08,paymentMs:400,paymentError:.02,attack:20,regionMs:15,failure:0,budget:1500,slo:1200,completionSlo:60};
+export const SCENARIOS:Scenario[]=[
+ {id:'drop',title:'A cidade descobriu a FlashCart',subtitle:'Uma vitrine, milhares de visitantes',description:'Uma criadora compartilhou sua lista. As visitas se concentram em produtos populares; pedidos ainda precisam chegar sem atrasos.',heat:1,axis:'performance',duration:1,mutation:{reads:1200,writes:75,hot:.18},signals:['1.200 leituras/s','75 pedidos/s','Pico por 1 rodada']},
+ {id:'mobile',title:'Checkout de bolso',subtitle:'Um novo público entra em cena',description:'O aplicativo móvel amplia as compras. Conexões variáveis e escritas mais frequentes pressionam a experiência.',heat:1,axis:'product',duration:0,mutation:{reads:650,writes:110,regionMs:80,slo:1000},signals:['110 pedidos/s','Rede +80 ms','Mudança permanente']},
+ {id:'catalog',title:'Prateleiras em movimento',subtitle:'Os preços mudam mais rápido',description:'Lojistas atualizam preços e estoque ao longo do dia. Clientes comparam a vitrine com o valor do checkout.',heat:2,axis:'consistency',duration:0,mutation:{reads:900,writes:140,updateRate:.065},signals:['900 leituras/s','Atualizações frequentes','Dados atuais importam']},
+ {id:'campaign',title:'Entrega antes do almoço',subtitle:'Uma campanha nacional',description:'Uma oferta curta traz mais pedidos e reduz a tolerância à espera. O tráfego não se distribui igualmente entre os produtos.',heat:2,axis:'performance',duration:1,mutation:{reads:1800,writes:170,hot:.25,slo:900},signals:['1.800 leituras/s','170 pedidos/s','p95 desejado <900 ms']},
+ {id:'partner',title:'Pedidos aguardando confirmação',subtitle:'A jornada vai além da loja',description:'Clientes veem pedidos pendentes. Um parceiro leva mais tempo para responder; pagamentos podem concluir em até 60 segundos.',heat:3,axis:'availability',duration:0,mutation:{paymentMs:3400,paymentError:.14,completionSlo:60},signals:['Parceiro p95 3,4 s','14% de falhas externas','Conclusão em até 60 s']},
+ {id:'budget',title:'Crescer com a mesma equipe',subtitle:'O orçamento ganhou um teto menor',description:'A operação precisa atender mais compradores com menos espaço para custo recorrente. A complexidade também pesa.',heat:3,axis:'cost',duration:0,mutation:{reads:1400,writes:140,budget:1250},signals:['Orçamento $1.250/mês','1.400 leituras/s','Equipe permanece igual']},
+ {id:'login',title:'Movimento fora do padrão',subtitle:'Muitas tentativas, poucas compras',description:'O volume de entradas dispara. Parte não se converte em navegação legítima; bloquear compradores também tem custo.',heat:3,axis:'security',duration:1,mutation:{attack:1200,reads:1000,writes:130},signals:['1.200 tentativas suspeitas/s','1.000 leituras legítimas/s','Falsos positivos afetam conversão']},
+ {id:'sku',title:'O último par',subtitle:'Todos querem o mesmo produto',description:'Compradores disputam as últimas unidades. Confirmações repetidas e estoque divergente prejudicam a confiança.',heat:4,axis:'consistency',duration:0,mutation:{hot:.8,writes:240,updateRate:.1,reads:1600},signals:['240 pedidos/s','80% concentrados','Estoque precisa ser coerente']},
+ {id:'regional',title:'Além da ponte',subtitle:'A FlashCart chega a outra região',description:'Uma nova região traz distância, mais visitas e entregas concorrentes. A loja deve continuar operando durante interrupções.',heat:4,axis:'availability',duration:0,mutation:{regionMs:160,reads:2000,writes:190,failure:.08},signals:['Rede +160 ms','2.000 leituras/s','Interrupções parciais']},
+ {id:'closing',title:'A noite mais movimentada',subtitle:'O mundo não espera o deploy',description:'Um grande pico coincide com tentativas automatizadas. O custo de operar e a correção dos pedidos continuam importando.',heat:5,axis:'performance',duration:1,mutation:{reads:2600,writes:260,attack:1100,hot:.35},signals:['2.600 leituras/s','260 pedidos/s','Tráfego automatizado simultâneo']},
+ {id:'outage',title:'Luzes intermitentes',subtitle:'Uma zona perde estabilidade',description:'Uma interrupção parcial acontece no horário de maior uso. Clientes tentam novamente enquanto aguardam confirmação.',heat:5,axis:'resilience',duration:1,mutation:{failure:.16,paymentError:.2,reads:2000,writes:230},signals:['16% de interrupção no teste','20% de erros do parceiro','Clientes repetem tentativas']},
+ {id:'audit',title:'Promessa de confiança',subtitle:'Vender é também cumprir',description:'A campanha final exige precisão de estoque e proteção dos dados, mesmo com acessos incomuns e volume elevado.',heat:5,axis:'security',duration:1,mutation:{attack:1800,reads:1800,writes:220,hot:.65,updateRate:.08},signals:['1.800 tentativas suspeitas/s','Alta concorrência','Proteção e correção simultâneas']}
+];
+export function initialGraph():Graph { return {nodes:[
+ {id:'client',kind:'client',name:'Clientes',x:-6,z:0,config:{},upgrades:[]},
+ {id:'api',kind:'api',name:'API da loja',x:-2,z:0,config:{instances:1},upgrades:[]},
+ {id:'db',kind:'database',name:'PostgreSQL',x:3,z:-2,config:{},upgrades:[]},
+ {id:'payment',kind:'payment',name:'Pagamentos',x:3,z:2.5,config:{},upgrades:[]}
+ ],edges:[
+ {id:'entry',from:'client',to:'api',protocol:'REST',read:100,write:100,config:{},policies:[]},
+ {id:'data',from:'api',to:'db',protocol:'SQL',read:100,write:100,config:{},policies:[]},
+ {id:'pay',from:'api',to:'payment',protocol:'REST',read:0,write:100,config:{},policies:[]}
+ ]}; }

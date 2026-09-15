@@ -1,0 +1,239 @@
+{
+  "world": {
+    "reads": 1400,
+    "writes": 140,
+    "updateRate": 0.04,
+    "hot": 0.3,
+    "paymentMs": 1200,
+    "paymentError": 0.08,
+    "attack": 250,
+    "regionMs": 15,
+    "failure": 0,
+    "budget": 1500,
+    "slo": 1500,
+    "completionSlo": 60
+  },
+  "criteria": {
+    "errorRateBelow": 10,
+    "completionAbove": 80,
+    "p95Below": 1500,
+    "costBelow": 1500,
+    "consistencyAbove": 99
+  },
+  "results": {
+    "lean": {
+      "p95": 1280.53,
+      "throughput": 1484.45,
+      "errorRate": 3.61,
+      "availability": 96.39,
+      "consistency": 99.96,
+      "security": 75.5,
+      "completion": 92,
+      "cost": 668.84,
+      "complexity": 4.35,
+      "blocked": 162.5,
+      "falsePositive": 0,
+      "nodes": [
+        {
+          "id": "client",
+          "demand": 1790,
+          "capacity": 1000000000,
+          "utilization": 0,
+          "latency": 8,
+          "cost": 0
+        },
+        {
+          "id": "api",
+          "demand": 1627.5,
+          "capacity": 2131.12,
+          "utilization": 0.76,
+          "latency": 25.97,
+          "cost": 210
+        },
+        {
+          "id": "db",
+          "demand": 1187.62,
+          "capacity": 1150,
+          "utilization": 1.03,
+          "latency": 98.24,
+          "cost": 360
+        },
+        {
+          "id": "payment",
+          "demand": 227.5,
+          "capacity": 1300,
+          "utilization": 0.18,
+          "latency": 1200,
+          "cost": 0
+        }
+      ],
+      "incidents": [],
+      "traces": [
+        "Leituras atendidas: 96.83%; pedidos concluídos: 92%. Caminhos ausentes não atendem operações.",
+        "Custo $668.84/mês: componentes, políticas, tráfego e operação de 4 nós / 3 conexões."
+      ],
+      "backlog": 0,
+      "observed": false,
+      "diagnostic": false
+    },
+    "replicated": {
+      "p95": 1292.63,
+      "throughput": 1507.69,
+      "errorRate": 2.1,
+      "availability": 97.9,
+      "consistency": 99.26,
+      "security": 68.46,
+      "completion": 90.9,
+      "cost": 1308.88,
+      "complexity": 7.3,
+      "blocked": 185,
+      "falsePositive": 18.48,
+      "nodes": [
+        {
+          "id": "client",
+          "demand": 1790,
+          "capacity": 1000000000,
+          "utilization": 0,
+          "latency": 8,
+          "cost": 0
+        },
+        {
+          "id": "strategy-balancer-4",
+          "demand": 1586.52,
+          "capacity": 14000,
+          "utilization": 0.11,
+          "latency": 4,
+          "cost": 90
+        },
+        {
+          "id": "api",
+          "demand": 1586.52,
+          "capacity": 3787.83,
+          "utilization": 0.42,
+          "latency": 22,
+          "cost": 390
+        },
+        {
+          "id": "db",
+          "demand": 955.5,
+          "capacity": 1150,
+          "utilization": 0.83,
+          "latency": 40.51,
+          "cost": 500
+        },
+        {
+          "id": "payment",
+          "demand": 203.32,
+          "capacity": 1300,
+          "utilization": 0.16,
+          "latency": 1200,
+          "cost": 0
+        },
+        {
+          "id": "strategy-replica-5",
+          "demand": 1128.12,
+          "capacity": 1150,
+          "utilization": 0.98,
+          "latency": 81.16,
+          "cost": 180
+        }
+      ],
+      "incidents": [],
+      "traces": [
+        "Leituras atendidas: 98.6%; pedidos concluídos: 90.9%. Caminhos ausentes não atendem operações.",
+        "Custo $1308.88/mês: componentes, políticas, tráfego e operação de 6 nós / 6 conexões."
+      ],
+      "backlog": 0,
+      "observed": false,
+      "diagnostic": false
+    },
+    "async": {
+      "p95": 203.83,
+      "throughput": 1404.78,
+      "errorRate": 8.78,
+      "availability": 91.22,
+      "consistency": 99.69,
+      "security": 75.5,
+      "completion": 85.11,
+      "cost": 1108.82,
+      "complexity": 7.5,
+      "blocked": 162.5,
+      "falsePositive": 0,
+      "nodes": [
+        {
+          "id": "client",
+          "demand": 1790,
+          "capacity": 1000000000,
+          "utilization": 0,
+          "latency": 8,
+          "cost": 0
+        },
+        {
+          "id": "api",
+          "demand": 1627.5,
+          "capacity": 2200,
+          "utilization": 0.74,
+          "latency": 23.55,
+          "cost": 180
+        },
+        {
+          "id": "strategy-cache-4",
+          "demand": 1627.5,
+          "capacity": 12000,
+          "utilization": 0.14,
+          "latency": 4,
+          "cost": 140
+        },
+        {
+          "id": "db",
+          "demand": 1351.14,
+          "capacity": 1150,
+          "utilization": 1.17,
+          "latency": 134.08,
+          "cost": 290
+        },
+        {
+          "id": "strategy-queue-5",
+          "demand": 227.5,
+          "capacity": 7000,
+          "utilization": 0.03,
+          "latency": 8,
+          "cost": 100
+        },
+        {
+          "id": "strategy-worker-6",
+          "demand": 236.6,
+          "capacity": 1619.05,
+          "utilization": 0.15,
+          "latency": 30,
+          "cost": 325
+        },
+        {
+          "id": "payment",
+          "demand": 227.5,
+          "capacity": 1300,
+          "utilization": 0.18,
+          "latency": 1200,
+          "cost": 0
+        }
+      ],
+      "incidents": [
+        {
+          "type": "Exaustão de conexões",
+          "nodeId": "strategy-worker-6",
+          "detail": "168 conexões solicitadas para limite 160."
+        }
+      ],
+      "traces": [
+        "Cache: 45.12% de hits nas leituras roteadas; 768.32 leituras/s seguem para a origem.",
+        "PostgreSQL: demanda 1351.14 / capacidade 1150; 14.89% não atendido neste trecho.",
+        "Queue: 0 tarefas pendentes; conclusão estimada em 0 s.",
+        "Leituras atendidas: 91.83%; pedidos concluídos: 85.11%. Caminhos ausentes não atendem operações.",
+        "Custo $1108.82/mês: componentes, políticas, tráfego e operação de 7 nós / 6 conexões."
+      ],
+      "backlog": 0,
+      "observed": false,
+      "diagnostic": false
+    }
+  }
+}

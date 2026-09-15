@@ -1,0 +1,141 @@
+{
+  "format": "architecture-showdown-replay",
+  "contentVersion": "0.1.0",
+  "engineVersion": "0.3.0",
+  "seed": "flashcart-2026",
+  "names": [
+    "Alex",
+    "Sam"
+  ],
+  "specialties": [
+    "balanced",
+    "resilient"
+  ],
+  "log": [
+    {
+      "type": "ready",
+      "player": 0
+    },
+    {
+      "type": "ready",
+      "player": 1
+    },
+    {
+      "type": "stage",
+      "player": 0,
+      "command": {
+        "type": "play",
+        "uid": "p0-2",
+        "target": "pay",
+        "config": {
+          "retention": 120
+        }
+      }
+    },
+    {
+      "type": "stage",
+      "player": 0,
+      "command": {
+        "type": "play",
+        "uid": "p0-3",
+        "target": "p0-2",
+        "config": {
+          "instances": 1
+        }
+      }
+    },
+    {
+      "type": "stage",
+      "player": 1,
+      "command": {
+        "type": "play",
+        "uid": "p1-17",
+        "target": "pay",
+        "config": {
+          "isolation": 60
+        }
+      }
+    },
+    {
+      "type": "lock",
+      "player": 0
+    },
+    {
+      "type": "lock",
+      "player": 1
+    },
+    {
+      "type": "advance",
+      "player": 0
+    },
+    {
+      "type": "advance",
+      "player": 1
+    },
+    {
+      "type": "lock",
+      "player": 0
+    },
+    {
+      "type": "lock",
+      "player": 1
+    },
+    {
+      "type": "advance",
+      "player": 0
+    },
+    {
+      "type": "advance",
+      "player": 1
+    },
+    {
+      "type": "lock",
+      "player": 0
+    },
+    {
+      "type": "lock",
+      "player": 1
+    },
+    {
+      "type": "advance",
+      "player": 0
+    },
+    {
+      "type": "advance",
+      "player": 1
+    },
+    {
+      "type": "lock",
+      "player": 0
+    },
+    {
+      "type": "lock",
+      "player": 1
+    },
+    {
+      "type": "advance",
+      "player": 0
+    },
+    {
+      "type": "advance",
+      "player": 1
+    },
+    {
+      "type": "lock",
+      "player": 0
+    },
+    {
+      "type": "lock",
+      "player": 1
+    },
+    {
+      "type": "advance",
+      "player": 0
+    },
+    {
+      "type": "advance",
+      "player": 1
+    }
+  ],
+  "resultHash": "68a21c26"
+}
