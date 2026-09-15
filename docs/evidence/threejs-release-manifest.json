@@ -1,0 +1,117 @@
+{
+  "release": "architecture-developer-showdown-20260914-213408",
+  "createdAt": "2026-09-15T00:34:09.033Z",
+  "site": "https://architecture-developer-showdown.brdanpe.tech/",
+  "validation": {
+    "tests": 50,
+    "build": "passed",
+    "productionSmoke": "passed"
+  },
+  "files": {
+    "deploy/architecture-developer-showdown.service": {
+      "sha256": "e8c3f86d0d732d6283dd80297e597b224409538cfc2be7937474411a31665ca6",
+      "bytes": 573
+    },
+    "deploy/install.sh": {
+      "sha256": "5a72d0de29a61cebca5d780b1323c3a178db95e9ae91cac96c98df9fb1da54f1",
+      "bytes": 1890
+    },
+    "deploy/nginx-http.conf": {
+      "sha256": "fa91690c509507678b6678007a59f6113c4eb5edd96c6bbadec96ba062910d14",
+      "bytes": 1279
+    },
+    "deploy/nginx-https.conf": {
+      "sha256": "da5ceef5f54a95e36f2a4b2b4c65295e1e4abef0e4b9711c3dd81028ac8b2b06",
+      "bytes": 1877
+    },
+    "deploy/update.sh": {
+      "sha256": "2906f2ade03c7b1ee086642e81dd5c264e3a33b7590bfd50935d1de22f77d385",
+      "bytes": 2538
+    },
+    "deploy/verify-public.mjs": {
+      "sha256": "1d60e919794ad3d802b4bfcc1cc680173c1471cf8f0384e78f22a648742d1482",
+      "bytes": 5314
+    },
+    "dist/assets/Table-Cd-TbvKQ.js": {
+      "sha256": "1c05d971a8553e994ef95c7023bddf28e5fa0864bb748a9aea08fe266f505380",
+      "bytes": 922833
+    },
+    "dist/assets/index-BIX1JSdU.css": {
+      "sha256": "49eaf245272c1d60bc51100a0fef4d43f17d8b9c77ae9b924c106a280c042e25",
+      "bytes": 104760
+    },
+    "dist/assets/index-Dy5SGfaq.js": {
+      "sha256": "936e5092bd25354fe01e692c03860aeb349e417ea05ec655cc8bd9df6d314400",
+      "bytes": 295583
+    },
+    "dist/index.html": {
+      "sha256": "e341e1829d9d3f12d6aff50439c5785ad94b5e409d9f65bb18b546403debe178",
+      "bytes": 423
+    },
+    "package-lock.json": {
+      "sha256": "b72f33ceebe413b00406267f84432e19a01e715050d31c9a175f288d9a77e60e",
+      "bytes": 154454
+    },
+    "package.json": {
+      "sha256": "994c169f2666af66bd0b7eee90f38f447f665c1a19dfa3d87f51f0ddb65af39f",
+      "bytes": 1167
+    },
+    "packages/content/catalog.ts": {
+      "sha256": "be3c4e308789c63a3663ba6081ec9093ed0bd0222174191467abf38847363d44",
+      "bytes": 14317
+    },
+    "packages/domain/random.ts": {
+      "sha256": "c34ef112924a627dfaf9cbb785e85f7baf98ca833f792a348d8ac45c32d8f857",
+      "bytes": 774
+    },
+    "packages/domain/types.ts": {
+      "sha256": "86da902b760117f2ae2760de3dbab745a25e3c43292f08a30e079213cd73a5ec",
+      "bytes": 4801
+    },
+    "packages/rules/index.ts": {
+      "sha256": "3d04ed1865f162deef32e65916ac9cd49ecad33b324c7e20253a6f6000b52dea",
+      "bytes": 13146
+    },
+    "packages/session/index.ts": {
+      "sha256": "b6af19fdfbd5415a5a7633861366feb62d9bdbf3440dec477c0d8169c5eff9f5",
+      "bytes": 8765
+    },
+    "packages/simulation/index.ts": {
+      "sha256": "a763e2f1ba96c77adef026b8072cdd1c932d2f8cea1a71fe2f8d36c1d2a537be",
+      "bytes": 17013
+    },
+    "packages/simulation/showdown.ts": {
+      "sha256": "edc1fe51be187626911bfc338c72827838b13392fe3c0a34a0ffe5f596a69b95",
+      "bytes": 4983
+    },
+    "packages/world/index.ts": {
+      "sha256": "e4e5aac946c1ba30db48a2242540b22a6fa5a296e25337d73e0b5091ff1c25b5",
+      "bytes": 1168
+    },
+    "server/app.ts": {
+      "sha256": "f8260e99e9a65f138d7a3cbc21d85311432ebb17214b8c70daf4320e22b72daa",
+      "bytes": 12444
+    },
+    "server/bot.ts": {
+      "sha256": "a8cd859cf22e32ae685ea27d86497b3c42913c5b97c08bce48e507933330ecc6",
+      "bytes": 5415
+    },
+    "server/index.ts": {
+      "sha256": "9e510b1ed4285fa9051dad66cf1280552b4ee194833c47ec8b674f05c04ed510",
+      "bytes": 844
+    },
+    "server/lobby.ts": {
+      "sha256": "ae4759c0d437629bcc702ab8e5a2f597ed8ab7a221fa39fd2b84f811fd54530c",
+      "bytes": 1558
+    },
+    "server/round-clock.ts": {
+      "sha256": "a09f1e5e1bfd25946e074f15e32180ae6fc6674489ccab0f8de4efafb36fb043",
+      "bytes": 1074
+    },
+    "tests/production-smoke.ts": {
+      "sha256": "34a844f2228f86d82698b66dceadbc78129a3d009b9b03f4f20c3f2ac63ed927",
+      "bytes": 1036
+    }
+  }
+}
+
