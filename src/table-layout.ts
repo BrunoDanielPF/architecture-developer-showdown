@@ -1,10 +1,13 @@
 import type {Graph} from '../packages/domain/types';
 
-export const TABLE_NODE_GAP={x:3.05,z:2.7};
+export const TABLE_NODE_GAP={x:3.55,z:3.15};
+export const TABLE_LAYOUT_SCALE={x:1.18,z:1.16};
 const TABLE_BOUNDS={x:8,z:5.8};
 
 export function spreadTableGraph(graph:Graph):Graph{
- const nodes=graph.nodes.map(node=>({...node,config:{...node.config},upgrades:[...node.upgrades]}));
+ const center=graph.nodes.reduce((total,node)=>({x:total.x+node.x,z:total.z+node.z}),{x:0,z:0}),count=Math.max(1,graph.nodes.length);
+ center.x/=count;center.z/=count;
+ const nodes=graph.nodes.map(node=>({...node,x:center.x+(node.x-center.x)*TABLE_LAYOUT_SCALE.x,z:center.z+(node.z-center.z)*TABLE_LAYOUT_SCALE.z,config:{...node.config},upgrades:[...node.upgrades]}));
  for(let iteration=0;iteration<36;iteration++){
   let changed=false;
   for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){

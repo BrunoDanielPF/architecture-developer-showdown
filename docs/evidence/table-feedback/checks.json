@@ -1,7 +1,7 @@
 {
   "passed": [
-    "zoom moves board and preserves hand bounds",
-    "pan moves board and preserves hand bounds",
+    "accelerated zoom moves board and preserves hand bounds",
+    "accelerated pan moves board and preserves hand bounds",
     "recenter restores camera",
     "protocol name and description visible",
     "single card DOM during drag",
@@ -10,5 +10,9 @@
     "round result survives advance and reload",
     "766px and 390px without horizontal overflow"
   ],
+  "navigation": {
+    "zoomRatio": 1.52,
+    "panDistancePx": 82
+  },
   "browserErrors": []
 }

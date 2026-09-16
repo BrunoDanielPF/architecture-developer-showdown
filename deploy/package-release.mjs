@@ -2,9 +2,11 @@ import {createHash} from 'node:crypto';
 import {readFile,readdir,stat,writeFile} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 
-const [release,previous,manifestPath,metadataPath,archivePath]=process.argv.slice(2);
+const [release,previous,manifestPath,metadataPath,archivePath,testsArg]=process.argv.slice(2);
 if(!/^architecture-developer-showdown-[0-9]{8}-[0-9]{6}$/.test(release))throw new Error('Release inválida.');
 if(!previous?.startsWith('/var/www/architecture-developer-showdown/releases/'))throw new Error('Release anterior inválida.');
+const tests=Number(testsArg);
+if(!Number.isInteger(tests)||tests<1)throw new Error('Informe a quantidade de testes aprovados.');
 const assets=(await readdir('dist/assets')).map(name=>`dist/assets/${name}`);
 const files=[
  'deploy/architecture-developer-showdown.service','deploy/install.sh','deploy/nginx-http.conf','deploy/nginx-https.conf','deploy/update.sh','deploy/verify-public.mjs',
@@ -14,7 +16,7 @@ const files=[
 ].sort();
 const entries={};
 for(const file of files){const data=await readFile(file);entries[file]={sha256:createHash('sha256').update(data).digest('hex'),bytes:data.length};}
-const manifest={release,createdAt:new Date().toISOString(),site:'https://architecture-developer-showdown.brdanpe.tech/',validation:{tests:50,build:'passed',productionSmoke:'passed'},files:entries};
+const manifest={release,createdAt:new Date().toISOString(),site:'https://architecture-developer-showdown.brdanpe.tech/',validation:{tests,build:'passed',productionSmoke:'passed'},files:entries};
 await writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n');
 const tar=spawnSync('tar',['-czf',archivePath,...files],{stdio:'inherit'});if(tar.status!==0)throw new Error('Falha ao criar pacote.');
 const archive=await readFile(archivePath),info=await stat(archivePath);

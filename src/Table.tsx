@@ -1,6 +1,6 @@
-import {Canvas, useThree, useFrame} from '@react-three/fiber';
+import {Canvas, useThree} from '@react-three/fiber';
 import {Html, Line, OrbitControls, RoundedBox} from '@react-three/drei';
-import {Suspense, useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
+import {Suspense, useEffect, useMemo, useRef, type ReactNode} from 'react';
 import * as THREE from 'three';
 import type {Graph, Target, Telemetry} from '../packages/domain/types';
 import {slots} from '../packages/rules';
@@ -9,18 +9,20 @@ import {CATALOG} from '../packages/content/catalog';
 import {protocolInfo} from './protocols';
 import {spreadTableGraph} from './table-layout';
 import IncidentLayer,{IncidentDock} from './IncidentLayer';
-import {BalancedTraffic,EdgePolicyHardware,NodeHardware} from './architecture-visuals';
+import {EdgePolicyHardware,NodeHardware} from './architecture-visuals';
 import {edgeVisualModel,nodeVisualModel} from './architecture-visual-model';
+import {communicationVisualModel} from './communication-visual-model';
+import {CommunicationFlow} from './communication-visuals';
+import {TABLE_NAVIGATION} from './table-navigation';
 const cameraOptions={position:[0,27,15.5] as [number,number,number],zoom:40,near:.1,far:100};
 const colors:Record<string,string>={client:'#b4c5d4',api:'#69b8cc',database:'#b498eb',payment:'#e8b365',cache:'#b498eb',queue:'#e8b365',worker:'#69b8cc',balancer:'#69b8cc',cdn:'#b498eb',storage:'#b498eb'};
 const kindLabels:Record<string,string>={client:'ENTRADA',api:'SERVIÇO',database:'DADOS',payment:'PAGAMENTO',cache:'CACHE',queue:'FILA',worker:'PROCESSAMENTO',balancer:'DISTRIBUIÇÃO',cdn:'ENTREGA',storage:'ARMAZENAMENTO'};
 type Props={focusArchitecture?:boolean;market?:ReactNode[];scenario?:ReactNode;graph:Graph;targets:Target[];selected?:string;dragTarget?:string;dragging?:boolean;onTarget:(id:string)=>void;onInspect:(id:string)=>void;telemetry?:Partial<Telemetry>;showActivity?:boolean;resetKey?:string};
 type ArchitectureModuleProps={node:Graph['nodes'][number];color:string;valid:boolean;active:boolean;hot:boolean;utilization?:number;events:{onClick:(e:React.MouseEvent)=>void;onDragOver:(e:React.DragEvent)=>void;onDrop:(e:React.DragEvent)=>void}};
-function TrafficPacket({points}:{points:[number,number,number][]}){
- const mesh=useRef<THREE.Mesh>(null),[reduced]=useState(()=>matchMedia('(prefers-reduced-motion: reduce)').matches);
- const path=useMemo(()=>{const p=new THREE.CurvePath<THREE.Vector3>();for(let i=1;i<points.length;i++)p.add(new THREE.LineCurve3(new THREE.Vector3(...points[i-1]),new THREE.Vector3(...points[i])));return p;},[JSON.stringify(points)]);
- useFrame(({clock})=>{if(mesh.current)mesh.current.position.copy(path.getPoint((clock.elapsedTime*.35)%1)).add(new THREE.Vector3(0,.09,0));});
- return reduced?null:<mesh ref={mesh}><sphereGeometry args={[.09,8,8]}/><meshBasicMaterial color="#b4fbff"/></mesh>;
+function routeDirection(points:[number,number,number][],fromEnd=false){
+ if(fromEnd){for(let index=points.length-1;index>0;index--){const direction=new THREE.Vector3(...points[index]).sub(new THREE.Vector3(...points[index-1]));if(direction.lengthSq()>.0001)return direction.normalize();}}
+ else for(let index=1;index<points.length;index++){const direction=new THREE.Vector3(...points[index]).sub(new THREE.Vector3(...points[index-1]));if(direction.lengthSq()>.0001)return direction.normalize();}
+ return new THREE.Vector3(1,0,0);
 }
 function PerimeterRail(){
  const horizontal=useMemo(()=>Array.from({length:12},(_,i)=>-12.65+i*2.3),[]);
@@ -73,7 +75,7 @@ function ArchitectureModule({node,color,valid,active,hot,utilization,events}:Arc
    <mesh position={[0,.06,depth/2+.004]} castShadow><boxGeometry args={[visual.cluster?1.9:1.5,.075,.035]}/><meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={valid?.85:.45} metalness={.35} roughness={.3}/></mesh>
    <mesh position={[-width/2-.005,.01,0]} rotation={[0,0,Math.PI/2]}><cylinderGeometry args={[.08,.08,.08,12]}/><meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={.35}/></mesh>
    <mesh position={[width/2+.005,.01,0]} rotation={[0,0,Math.PI/2]}><cylinderGeometry args={[.08,.08,.08,12]}/><meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={.35}/></mesh>
-   <NodeHardware node={node} color={statusColor}/>
+   <NodeHardware node={node} color={statusColor} active={hot}/>
    <Html position={[0,.48,visual.cluster?.68:0]} transform rotation={[-Math.PI/2,0,0]} distanceFactor={5} center zIndexRange={[12,1]}><button data-target={node.id} data-node={node.kind} data-instance-count={visual.instanceCount} data-node-role={visual.role} data-node-effects={visual.effects.join(' ')} className={`node-label ${visual.cluster?'clustered':''} ${valid?'valid':''} ${active?'drop-active':''} ${hot?'saturated':''}`} style={{'--node-color':statusColor} as React.CSSProperties} {...events} aria-label={`Componente ${node.name}${visual.cluster?`, ${visual.instanceCount} instâncias`:''}`}>
      <Icon name={node.kind} size={24}/><strong>{node.name}</strong><span className="node-kind">{kindLabels[node.kind]??'COMPONENTE'}</span>
      {visual.cluster&&<span className="instances">{visual.instanceCount} INSTÂNCIAS</span>}
@@ -113,19 +115,21 @@ function Scene({graph,targets,onTarget,onInspect,telemetry,showActivity,selected
    {tableGraph.edges.map(e=>{
      const a=tableGraph.nodes.find(n=>n.id===e.from)!,b=tableGraph.nodes.find(n=>n.id===e.to)!;
      const points:[number,number,number][]=[[a.x,.47,a.z],[a.x+(b.x-a.x)*.5,.47,a.z],[a.x+(b.x-a.x)*.5,.47,b.z],[b.x,.47,b.z]];
-     const info=protocolInfo(e.protocol);
-     const direction=new THREE.Vector3(b.x-a.x,0,b.x===a.x?b.z-a.z:0).normalize();
-     const arrowRotation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction);
+     const info=protocolInfo(e.protocol),communication=communicationVisualModel(e,tableGraph);
+     const first=new THREE.Vector3(...points[0]),last=new THREE.Vector3(...points[points.length-1]);
+     const firstDirection=routeDirection(points),forwardDirection=routeDirection(points,true),returnDirection=firstDirection.clone().negate();
+     const forwardRotation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),forwardDirection),returnRotation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),returnDirection);
+     const forwardPosition=last.clone().addScaledVector(forwardDirection,-.68),returnPosition=first.clone().addScaledVector(returnDirection,-.68);
      const color=ids.has(e.id)?'#ffd38b':e.protocol==='async'?'#d7a866':'#679ca9';
-     const visual=edgeVisualModel(e,tableGraph),midpoint:[number,number,number]=[(a.x+b.x)/2,.53,(a.z+b.z)/2];
+     const visual=edgeVisualModel(e,tableGraph);
      return <group key={e.id}>
-       <Line points={points} color={color} lineWidth={ids.has(e.id)?4:2.4} dashed={e.protocol==='async'} dashSize={.16} gapSize={.1}/>
-       {showActivity&&!visual.balanced&&<TrafficPacket points={points}/>}
-       <BalancedTraffic edge={e} graph={tableGraph} color={color}/>
-       <EdgePolicyHardware edge={e} position={midpoint}/>
-       <mesh position={[b.x-direction.x*.95,.49,b.z-direction.z*.95]} quaternion={arrowRotation}><coneGeometry args={[.10,.25,3]}/><meshBasicMaterial color={color}/></mesh>
-       <Html position={[(a.x+b.x)/2,.7,(a.z+b.z)/2]} center zIndexRange={[10,0]}><button data-target={e.id} data-balanced-lanes={visual.laneCount} data-edge-effects={visual.effects.join(' ')} className={`edge-label ${ids.has(e.id)?'valid':''} ${dragTarget===e.id?'drop-active':''}`} {...targetEvents(e.id)} title={`${info.name}: ${info.description} ${a.name} → ${b.name}`} aria-label={`${info.name}: ${a.name} para ${b.name}. ${info.description}`}>
-         <strong>{info.name}</strong><span>→</span><span className="edge-description">{info.description}</span>{e.read!==100||e.write!==100?<small>R {Math.round(e.read)} · W {Math.round(e.write)}</small>:null}
+       <Line points={points} color={color} lineWidth={ids.has(e.id)?4:2.4} dashed={['async','replication'].includes(e.protocol)} dashSize={.16} gapSize={.1}/>
+       <CommunicationFlow edge={e} graph={tableGraph} points={points} active={Boolean(showActivity)} color={color}/>
+       <EdgePolicyHardware edge={e} points={points} active={Boolean(showActivity)}/>
+       <mesh position={[forwardPosition.x,.5,forwardPosition.z]} quaternion={forwardRotation}><coneGeometry args={[.10,.25,3]}/><meshBasicMaterial color={communication.requestColor}/></mesh>
+       {communication.hasResponse&&<mesh position={[returnPosition.x,.5,returnPosition.z]} quaternion={returnRotation}><coneGeometry args={[.09,.22,3]}/><meshBasicMaterial color={communication.responseColor}/></mesh>}
+       <Html position={[(a.x+b.x)/2,.7,(a.z+b.z)/2]} center zIndexRange={[10,0]}><button data-target={e.id} data-balanced-lanes={visual.laneCount} data-edge-effects={visual.effects.join(' ')} data-communication-mode={communication.mode} data-communication-synchronous={String(communication.synchronous)} data-communication-persistent={String(communication.persistent)} data-communication-response={String(communication.hasResponse)} data-communication-acknowledgement={String(communication.hasAcknowledgement)} className={`edge-label ${ids.has(e.id)?'valid':''} ${dragTarget===e.id?'drop-active':''}`} {...targetEvents(e.id)} title={`${info.name} · ${communication.label}: ${info.description} ${a.name} → ${b.name}`} aria-label={`${info.name}, ${communication.label.toLocaleLowerCase('pt-BR')}: ${a.name} para ${b.name}. ${info.description}`}>
+         <strong>{info.name}</strong><span>{communication.hasResponse?'↔':'→'}</span><small className="protocol-mode">{communication.label}</small><span className="edge-description">{info.description}</span>{e.read!==100||e.write!==100?<small>R {Math.round(e.read)} · W {Math.round(e.write)}</small>:null}
          {e.policies.length>0&&<i>{e.policies.map(c=>CATALOG[c]?.name).join(' · ')}</i>}
        </button></Html>
      </group>;
@@ -140,7 +144,7 @@ function Scene({graph,targets,onTarget,onInspect,telemetry,showActivity,selected
    </group>)}
    {scenario&&<group position={[-10.25,.67,5.15]} rotation={[0,.12,0]}>{[0,1,2,3].map(i=><RoundedBox key={i} args={[2.8,.09,3.7]} radius={.07} position={[i*.05,i*.1,0]} castShadow><meshStandardMaterial color={i===3?'#49c7d0':'#315368'}/></RoundedBox>)}<Html transform rotation={[-Math.PI/2,0,0]} position={[.15,.36,0]} distanceFactor={6} center zIndexRange={[16,12]}>{scenario}</Html></group>}
    {market.length>0&&<Html position={[10.25,.62,-5.72]} center zIndexRange={[9,1]}><div className="table-zone-label">MERCADO <span>COMPARTILHADO</span></div></Html>}
-   <OrbitControls ref={controls} makeDefault enableRotate={false} minPolarAngle={.3} maxPolarAngle={1.05} minZoom={12} maxZoom={85} maxAzimuthAngle={.5} minAzimuthAngle={-.5} enablePan screenSpacePanning={false} panSpeed={.8} mouseButtons={{LEFT:THREE.MOUSE.PAN,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.PAN}} touches={{ONE:THREE.TOUCH.PAN,TWO:THREE.TOUCH.DOLLY_PAN}}/>
+   <OrbitControls ref={controls} makeDefault enableRotate={false} minPolarAngle={.3} maxPolarAngle={1.05} minZoom={TABLE_NAVIGATION.minZoom} maxZoom={TABLE_NAVIGATION.maxZoom} maxAzimuthAngle={.5} minAzimuthAngle={-.5} enablePan screenSpacePanning={false} panSpeed={TABLE_NAVIGATION.panSpeed} zoomSpeed={TABLE_NAVIGATION.zoomSpeed} mouseButtons={{LEFT:THREE.MOUSE.PAN,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.PAN}} touches={{ONE:THREE.TOUCH.PAN,TWO:THREE.TOUCH.DOLLY_PAN}}/>
  </>;
 }
 export default function Table(props:Props){

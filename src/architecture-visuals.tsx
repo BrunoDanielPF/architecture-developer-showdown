@@ -1,13 +1,37 @@
-import {RoundedBox,Line} from '@react-three/drei';
+import {RoundedBox,Line,Html} from '@react-three/drei';
 import {useFrame} from '@react-three/fiber';
 import {useMemo,useRef,useState} from 'react';
 import * as THREE from 'three';
-import type {Edge,Graph,Node} from '../packages/domain/types';
-import {edgeVisualEffects,edgeVisualModel,nodeVisualModel,type EdgeVisualEffect,type NodeVisualEffect} from './architecture-visual-model';
+import type {Edge,Node} from '../packages/domain/types';
+import {CATALOG} from '../packages/content/catalog';
+import {edgeVisualEffects,nodeVisualModel,type EdgeVisualEffect,type NodeVisualEffect} from './architecture-visual-model';
+import {attachmentDefinition,edgeAttachmentProgress,nodeAttachmentSlots,type ArchitectureAttachmentDefinition} from './architecture-attachment-model';
+import {Icon} from './icons';
 
 const effectColors:Record<NodeVisualEffect|string,string>={replication:'#b991ff',elasticity:'#65e7ef',zones:'#75a9ff',health:'#79e5a8',index:'#e9c56e',pool:'#6ed4ed',observability:'#70e1ff',idempotency:'#91dda8','dead-letter':'#ed8b76',locking:'#d6a8ff',identity:'#7eb9ff',tracing:'#f0b96f',timeout:'#f1b96c',retry:'#e5aa68',breaker:'#ed7c72','rate-limit':'#efc56d',firewall:'#69d3f0',compression:'#9ab7ff',bulkhead:'#c39aff',backpressure:'#e2ad65','secure-transport':'#71d9c6'};
 
 function useReducedMotion(){return useState(()=>matchMedia('(prefers-reduced-motion: reduce)').matches)[0];}
+
+function ArchitectureAttachment({definition,position,active=false}:{definition:ArchitectureAttachmentDefinition;position:[number,number,number];active?:boolean}){
+ const group=useRef<THREE.Group>(null),material=useRef<THREE.MeshStandardMaterial>(null),signal=useRef<THREE.Group>(null),reduced=useReducedMotion(),inline=definition.placement==='inline-gate';
+ useFrame(({clock})=>{
+  const wave=Math.sin(clock.elapsedTime*(active?4.2:2.1)+position[0]*.7);
+  if(group.current)group.current.position.y=position[1]+(reduced?0:wave*.018);
+  if(material.current)material.current.emissiveIntensity=(active ? .42 : .22)+(reduced?0:Math.max(0,wave)*.12);
+  if(signal.current&&!reduced){if(definition.motion==='rotate')signal.current.rotation.y=clock.elapsedTime*1.6;signal.current.scale.setScalar(definition.motion==='pulse'?1+wave*.12:1);}
+ });
+ const label=CATALOG[definition.cardId]?.name??definition.shortLabel;
+ return <group ref={group} position={position}>
+  {inline&&<>{[-.34,.34].map(side=><mesh key={side} position={[side,.02,0]}><boxGeometry args={[.055,.34,.09]}/><meshStandardMaterial color={definition.color} emissive={definition.color} emissiveIntensity={.28}/></mesh>)}</>}
+  <RoundedBox args={[.72,.16,.62]} radius={.075} castShadow><meshStandardMaterial ref={material} color="#102733" emissive={definition.color} emissiveIntensity={.24} metalness={.5} roughness={.32}/></RoundedBox>
+  <group ref={signal}><mesh position={[0,.095,0]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.23,.255,24]}/><meshBasicMaterial color={definition.color} transparent opacity={active ? .85 : .55}/></mesh></group>
+  <Html position={[0,.105,0]} transform rotation={[-Math.PI/2,0,0]} distanceFactor={8} center zIndexRange={[13,2]}>
+   <div className="architecture-attachment-icon" data-architecture-attachment={definition.effect} data-attachment-card={definition.cardId} data-attachment-scope={definition.scope} data-attachment-placement={definition.placement} style={{'--attachment-color':definition.color} as React.CSSProperties} title={`${label} anexado à arquitetura`} aria-label={`${label} anexado à arquitetura`}>
+    <Icon name={definition.cardId} size={15}/><small>{definition.shortLabel}</small>
+   </div>
+  </Html>
+ </group>;
+}
 
 function InstanceUnit({x,z,color,index,elastic}:{x:number;z:number;color:string;index:number;elastic:boolean}){
  const group=useRef<THREE.Group>(null),material=useRef<THREE.MeshStandardMaterial>(null),reduced=useReducedMotion();
@@ -51,39 +75,38 @@ function EffectGlyph({effect,index}:{effect:NodeVisualEffect;index:number}){
  return <group ref={animated} position={[x,.4,z]}><mesh><torusGeometry args={[.1,.025,7,14]}/><meshBasicMaterial color={color}/></mesh></group>;
 }
 
-export function NodeHardware({node,color}:{node:Node;color:string}){
+function NodeAttachmentRack({effects,cluster,active}:{effects:NodeVisualEffect[];cluster:boolean;active:boolean}){
+ const slots=nodeAttachmentSlots(effects.length,cluster);
+ return <group>{effects.map((effect,index)=>{const slot=slots[index];return <ArchitectureAttachment key={effect} definition={attachmentDefinition(effect)} position={[slot.x,.53,slot.z]} active={active}/>;})}</group>;
+}
+
+export function NodeHardware({node,color,active=false}:{node:Node;color:string;active?:boolean}){
  const visual=nodeVisualModel(node),clusterCapable=['api','worker'].includes(node.kind);
  return <group>
   {visual.zones===2&&<RoundedBox args={[2.34,.08,1.74]} radius={.13} position={[0,.17,0]}><meshStandardMaterial color="#10243a" emissive="#6996ff" emissiveIntensity={.12} transparent opacity={.82}/></RoundedBox>}
   {clusterCapable&&visual.cluster?visual.instances.map((position,index)=><InstanceUnit key={index} {...position} color={color} index={index} elastic={visual.elastic}/>):node.kind==='balancer'?<BalancerCore color={color}/>:node.kind==='database'?<DatabaseCore color={color} replica={visual.role==='read-replica'}/>:<GenericCore color={color}/>}
   {visual.effects.filter(effect=>!['elasticity','replication'].includes(effect)).map((effect,index)=><EffectGlyph key={`${effect}-${index}`} effect={effect} index={index}/>)}
+  <NodeAttachmentRack effects={visual.effects} cluster={visual.cluster} active={active}/>
   {visual.role==='primary'&&<mesh position={[.78,.4,-.48]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.08,.12,18]}/><meshBasicMaterial color="#bd92ff"/></mesh>}
  </group>;
 }
 
-function PolicyGate({effect,index}:{effect:EdgeVisualEffect;index:number}){
- const color=effectColors[effect],x=(index-1)*.26;
- const animated=useRef<THREE.Group>(null),reduced=useReducedMotion();
- useFrame(({clock})=>{if(!animated.current||reduced)return;const wave=Math.sin(clock.elapsedTime*2.6+index);if(effect==='retry')animated.current.rotation.y=clock.elapsedTime*1.2;if(effect==='breaker')animated.current.rotation.z=-.45+Math.max(0,wave)*.22;if(['rate-limit','firewall','secure-transport','backpressure'].includes(effect))animated.current.scale.setScalar(1+wave*.07);});
- if(effect==='breaker')return <group ref={animated} position={[x,.17,0]} rotation={[0,0,-.45]}><mesh><boxGeometry args={[.34,.05,.06]}/><meshBasicMaterial color={color}/></mesh></group>;
- if(effect==='bulkhead')return <group ref={animated} position={[x,.15,0]}>{[-.07,.07].map(z=><mesh key={z} position={[0,0,z]}><boxGeometry args={[.05,.28,.05]}/><meshBasicMaterial color={color}/></mesh>)}</group>;
- if(effect==='firewall'||effect==='secure-transport')return <group ref={animated} position={[x,.17,0]}><mesh><octahedronGeometry args={[.14,0]}/><meshStandardMaterial color="#173342" emissive={color} emissiveIntensity={.55}/></mesh></group>;
- return <group ref={animated} position={[x,.17,0]} rotation={[Math.PI/2,0,0]}><mesh><torusGeometry args={[.1,.025,7,14]}/><meshBasicMaterial color={color}/></mesh></group>;
-}
+type EdgePoint=[number,number,number];
+function edgePath(points:EdgePoint[]){const path=new THREE.CurvePath<THREE.Vector3>();for(let index=1;index<points.length;index++){const start=new THREE.Vector3(...points[index-1]),end=new THREE.Vector3(...points[index]);if(start.distanceToSquared(end)>.0001)path.add(new THREE.LineCurve3(start,end));}return path;}
 
-export function EdgePolicyHardware({edge,position}:{edge:Edge;position:[number,number,number]}){
- const effects=edgeVisualEffects(edge.policies);
- if(!effects.length)return null;return <group position={position}>{effects.slice(0,3).map((effect,index)=><PolicyGate key={effect} effect={effect} index={index}/>)}</group>;
-}
-
-function FlowPacket({points,offset,color}:{points:[number,number,number][];offset:number;color:string}){
- const mesh=useRef<THREE.Mesh>(null),reduced=useReducedMotion(),path=useMemo(()=>new THREE.CatmullRomCurve3(points.map(point=>new THREE.Vector3(...point))),[JSON.stringify(points)]);
- useFrame(({clock})=>{if(mesh.current&&!reduced)mesh.current.position.copy(path.getPoint((clock.elapsedTime*.42+offset)%1));});
- return reduced?null:<mesh ref={mesh}><sphereGeometry args={[.07,8,8]}/><meshBasicMaterial color={color}/></mesh>;
-}
-
-export function BalancedTraffic({edge,graph,color}:{edge:Edge;graph:Graph;color:string}){
- const source=graph.nodes.find(node=>node.id===edge.from),target=graph.nodes.find(node=>node.id===edge.to),visual=edgeVisualModel(edge,graph);
- if(!source||!target||!visual.balanced)return null;
- return <group>{visual.laneOffsets.map((offset,index)=>{const endX=target.x+offset.x,endZ=target.z+offset.z,points:[[number,number,number],[number,number,number],[number,number,number]]=[[source.x,.51,source.z],[source.x+(target.x-source.x)*.58,.51,source.z+(target.z-source.z)*.58],[endX,.51,endZ]];return <group key={index}><Line points={points} color={color} lineWidth={1.15} transparent opacity={.48}/><FlowPacket points={points} offset={index/visual.laneCount} color="#c1fbff"/></group>;})}</group>;
+export function EdgePolicyHardware({edge,points,active=false}:{edge:Edge;points:EdgePoint[];active?:boolean}){
+ const effects=edgeVisualEffects(edge.policies),key=points.map(point=>point.join(',')).join('|');
+ const placements=useMemo(()=>{
+  const path=edgePath(points),progress=edgeAttachmentProgress(effects.length);
+  return effects.map((effect,index)=>{
+   const definition=attachmentDefinition(effect),at=progress[index],point=path.getPoint(at),before=path.getPoint(Math.max(0,at-.015)),after=path.getPoint(Math.min(1,at+.015)),tangent=after.sub(before).normalize(),perpendicular=new THREE.Vector3(-tangent.z,0,tangent.x);
+   const anchor=point.clone(),position=definition.placement==='sidecar'?point.addScaledVector(perpendicular,index%2?.56:-.56):point;
+   position.y=.63;anchor.y=.54;
+   return {definition,position:[position.x,position.y,position.z] as EdgePoint,anchor:[anchor.x,anchor.y,anchor.z] as EdgePoint};
+  });
+ },[effects.join('|'),key]);
+ if(!effects.length)return null;
+ return <group>{placements.map(({definition,position,anchor})=><group key={definition.effect}>
+  {definition.placement==='sidecar'&&<Line points={[anchor,position]} color={definition.color} lineWidth={1.1} transparent opacity={.7}/>}<ArchitectureAttachment definition={definition} position={position} active={active}/>
+ </group>)}</group>;
 }

@@ -34,11 +34,11 @@ try{
  const zoomed=await cards.first().boundingBox(),nodeZoomed=await node.boundingBox();
  assert.deepEqual(zoomed,before,'A mão deve manter posição e tamanho durante o zoom');
 
- assert.ok(nodeZoomed!.width>nodeBefore!.width*1.1,'O zoom precisa aproximar a arquitetura');
+ const zoomRatio=nodeZoomed!.width/nodeBefore!.width;assert.ok(zoomRatio>1.25,'O zoom acelerado precisa aproximar a arquitetura de forma perceptível');
  await page.screenshot({path:path.join(output,'desktop-zoom.png')});
  console.log('checking pan');await page.mouse.move(810,610);await page.mouse.down();await page.mouse.move(895,570,{steps:12});await page.mouse.up();await page.waitForTimeout(700);
  console.log('pan sent');const nodePanned=await node.boundingBox();
- assert.ok(Math.hypot(nodePanned!.x-nodeZoomed!.x,nodePanned!.y-nodeZoomed!.y)>30,'Arrastar vazio deve mover o tabuleiro');
+ const panDistance=Math.hypot(nodePanned!.x-nodeZoomed!.x,nodePanned!.y-nodeZoomed!.y);assert.ok(panDistance>45,'Arrastar vazio deve deslocar o tabuleiro com resposta rápida');
  assert.deepEqual(await cards.first().boundingBox(),before,'Pan não deve mover a mão');
  console.log('checking recenter');await page.getByRole('button',{name:'Centralizar mesa'}).click();await page.waitForTimeout(600);
  const centered=await node.boundingBox();assert.ok(Math.abs(centered!.x-nodeBefore!.x)<2);
@@ -87,6 +87,6 @@ try{
   await page.screenshot({path:path.join(output,`${width}-round2.png`),fullPage:true});
  }
  assert.deepEqual(errors,[]);
- await writeFile(path.join(output,'checks.json'),JSON.stringify({passed:['zoom moves board and preserves hand bounds','pan moves board and preserves hand bounds','recenter restores camera','protocol name and description visible','single card DOM during drag','hand reflows on lift and invalid return','card drag and placement','round result survives advance and reload','766px and 390px without horizontal overflow'],browserErrors:errors},null,2));
- console.log('Browser: zoom, pan, fixed hand, protocols, single-card drag/return, drop, persistent results and responsive layouts passed.');
+ await writeFile(path.join(output,'checks.json'),JSON.stringify({passed:['accelerated zoom moves board and preserves hand bounds','accelerated pan moves board and preserves hand bounds','recenter restores camera','protocol name and description visible','single card DOM during drag','hand reflows on lift and invalid return','card drag and placement','round result survives advance and reload','766px and 390px without horizontal overflow'],navigation:{zoomRatio:Number(zoomRatio.toFixed(2)),panDistancePx:Math.round(panDistance)},browserErrors:errors},null,2));
+ console.log(`Browser: zoom ${zoomRatio.toFixed(2)}x e pan ${Math.round(panDistance)} px, mão fixa, protocolos, arrasto, resultados persistentes e layouts responsivos aprovados.`);
 }catch(error){console.error(error);throw error;}finally{await browser.close();await app.close();}

@@ -17,9 +17,13 @@
 .edge-label,.edge-label:hover,.edge-label:focus-visible,.edge-label.valid{width:auto;height:auto;min-width:38px;max-width:135px;font-size:10px;padding:5px 7px;gap:4px;overflow:visible}
 .edge-label>strong{font-size:10px;font-weight:700}
 .edge-label>small{display:block;font-size:8px}
+.edge-label>.protocol-mode{color:#d8b874;font-size:7px;font-weight:700;letter-spacing:.075em;line-height:1.2;white-space:nowrap}
 .edge-label>i{display:block;font-size:8px}
 .edge-label>.edge-description{display:none}
 .edge-label:hover>.edge-description,.edge-label:focus-visible>.edge-description{display:block;position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:195px;padding:10px;border:1px solid #679cac;background:#102636;color:#d9edf3;font-size:11px;line-height:1.5;white-space:normal;pointer-events:none;box-shadow:0 4px 15px #0008}
+.architecture-attachment-icon{width:34px;min-height:31px;padding:3px 2px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1px solid color-mix(in srgb,var(--attachment-color),#fff 18%);border-radius:6px;background:color-mix(in srgb,var(--attachment-color) 18%,#0b202c);color:var(--attachment-color);box-shadow:0 3px 9px #0009,0 0 9px color-mix(in srgb,var(--attachment-color),transparent 65%);pointer-events:none;user-select:none}
+.architecture-attachment-icon svg{width:15px;height:15px;stroke-width:2.2;filter:drop-shadow(0 1px 2px #000)}
+.architecture-attachment-icon small{max-width:32px;color:#f2fbfc;font-size:5px;font-weight:800;line-height:1;letter-spacing:.035em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 2px #000}
 .world-changes,.round-result{margin-top:14px;padding-top:12px;border-top:1px solid #577d9155}
 .world-changes h3,.round-result h3{font-size:12px;color:#a8edf0;margin:0 0 9px}
 .world-changes p{display:flex;flex-direction:column;gap:4px;font-size:10px;line-height:1.5;margin:9px 0;color:#c4dce7}
