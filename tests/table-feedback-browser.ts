@@ -45,7 +45,10 @@ try{
  console.log('checking protocol');const label=page.locator('[data-target="data"]');
  assert.equal(await label.locator('strong').innerText(),'SQL');
  const protocolFont=await label.locator('strong').evaluate(e=>parseFloat(getComputedStyle(e).fontSize));assert.ok(protocolFont>=9,'O rótulo de protocolo deve respeitar o mínimo de 9 px do HUD compacto');
+ const labelBounds=await label.boundingBox();assert.ok(labelBounds&&labelBounds.width<86,'A linha deve exibir apenas um identificador compacto do protocolo');
  await label.hover();assert.ok(await label.locator('.edge-description').isVisible());
+ assert.match(await label.locator('.edge-description').innerText(),/CONSULTA · RESULTADO/);
+ assert.match(await label.locator('.edge-description').innerText(),/Leitura \d+% · escrita \d+%/);
  await page.screenshot({path:path.join(output,'desktop-protocol.png')});
  console.log('checking planning');await send('ready',0);await send('ready',1);
  await page.waitForFunction(()=>document.querySelector('.scenario-current h2')?.textContent!=='Uma loja pronta para crescer');

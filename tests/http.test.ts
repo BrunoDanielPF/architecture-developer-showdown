@@ -39,7 +39,7 @@ describe('partida via HTTP entre dois clientes',()=>{
    const before=await Promise.all(room.tokens.map(t=>request(url,t)));
    expect(before[0].body.version).toBe(version+1);
    for(const response of before){
-     expect(Object.keys(response.body.opponent).sort()).toEqual(['locked','name']);
+     expect(Object.keys(response.body.opponent).sort()).toEqual(['activity','handCount','locked','name']);
      expect(response.body).not.toHaveProperty('seed');expect(response.body).not.toHaveProperty('log');
      expect(response.body.player.telemetry).not.toHaveProperty('security');
      expect(response.body.player.telemetry).not.toHaveProperty('consistency');

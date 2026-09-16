@@ -1,11 +1,20 @@
 import { CARDS, CATALOG, CORE, SPECIALTIES, initialGraph } from '../content/catalog';
 import { clone, hash, shuffle } from '../domain/random';
-import type { Command, LogEntry, Match, Player, PlayerView } from '../domain/types';
+import type { Command, LogEntry, Match, Player, PlayerView, PublicHandActivity } from '../domain/types';
 import { ECONOMY, applyCommand, draft } from '../rules';
 import { emptyRuntime, simulate } from '../simulation';
 import { runShowdown } from '../simulation/showdown';
 import { initialWorld, reveal, scenarioRun } from '../world';
 export const CONTENT_VERSION='0.1.0',ENGINE_VERSION='0.4.0';
+const projectedHandCount=(match:Match,playerId:number)=>{
+ const player=match.players[playerId];
+ if(!['planning','adjustment'].includes(match.phase))return player.hand.length;
+ return player.hand.length+player.pending.reduce((delta,command)=>{
+  if(command.type==='play'||command.type==='reserve')return delta-1;
+  if(command.type==='buy'||command.type==='retrieve')return delta+1;
+  return delta;
+ },0);
+};
 export function createMatch(seed:string,names:string[]=['Arquiteta A','Arquiteto B'],specialties:string[]=['balanced','resilient']):Match{
  if(!seed||seed.length>80)throw new Error('Seed deve ter entre 1 e 80 caracteres.');
  const worldState=initialWorld();
@@ -16,7 +25,7 @@ export function createMatch(seed:string,names:string[]=['Arquiteta A','Arquiteto
    return {id,name:(names[id]||`Jogador ${id+1}`).trim().slice(0,30),specialty:specialties[id],deck,hand:deck.splice(0,5),backlog:[],discard:[],graph,ec:ECONOMY.initialEC,actions:ECONOMY.actions,budget:1500,runtime:result.runtime,telemetry:result.telemetry,locked:false,mulliganDone:false,pending:[]} as Player;
  }) as [Player,Player];
  const marketDeck=shuffle(CARDS.filter(c=>c.kind!=='action').slice(0,30).map((c,i)=>({uid:`m${i}`,cardId:c.id})),`${seed}:market`);
- return {id:`match-${hash(seed+names.join()+specialties.join())}`,seed,version:0,phase:'setup',round:0,players,market:marketDeck.splice(0,5),marketDeck,scenarios:scenarioRun(seed),revealed:[],worldState,log:[],notices:[[],[]],contentVersion:CONTENT_VERSION,engineVersion:ENGINE_VERSION};
+ return {id:`match-${hash(seed+names.join()+specialties.join())}`,seed,version:0,phase:'setup',round:0,players,market:marketDeck.splice(0,5),marketDeck,scenarios:scenarioRun(seed),revealed:[],worldState,log:[],publicHandActivity:[[],[]],notices:[[],[]],contentVersion:CONTENT_VERSION,engineVersion:ENGINE_VERSION};
 }
 export function project(match:Match,playerId:number):PlayerView{
  const source=match.players[playerId];if(!source)throw new Error('Jogador inválido.');
@@ -32,7 +41,8 @@ export function project(match:Match,playerId:number):PlayerView{
  let previousState=initialWorld();
  for(const [i,card] of match.revealed.slice(0,-1).entries())previousState=reveal(previousState,card,i+1);
 
- return {previousWorld:clone(previousState.world),measurements,id:match.id,version:match.version,phase:match.phase,round:match.round,player:{...safe,deckCount:deck.length,telemetry:visible},opponent:{name:match.players[1-playerId].name,locked:match.players[1-playerId].locked},market:clone(match.market),marketRemaining:match.marketDeck.length,scenarioRemaining:5-match.revealed.length,revealed:match.revealed.map(({heat,axis,mutation,...s})=>clone(s)),world:clone(match.worldState.world),notices:clone(match.notices[playerId]),...(match.phase==='showdown'?{showdown:clone(match.showdown)}:{})};
+ const opponentId=1-playerId;
+ return {previousWorld:clone(previousState.world),measurements,id:match.id,version:match.version,phase:match.phase,round:match.round,player:{...safe,deckCount:deck.length,telemetry:visible},opponent:{name:match.players[opponentId].name,locked:match.players[opponentId].locked,handCount:projectedHandCount(match,opponentId),activity:clone(match.publicHandActivity?.[opponentId]??[])},market:clone(match.market),marketRemaining:match.marketDeck.length,scenarioRemaining:5-match.revealed.length,revealed:match.revealed.map(({heat,axis,mutation,...s})=>clone(s)),world:clone(match.worldState.world),notices:clone(match.notices[playerId]),...(match.phase==='showdown'?{showdown:clone(match.showdown)}:{})};
 }
 function nextRound(m:Match){
  m.round++;m.phase='planning';m.notices=[[],[]];const card=m.scenarios[m.round-1];m.revealed.push(clone(card));m.worldState=reveal(m.worldState,card,m.round);
@@ -54,6 +64,7 @@ function resolve(m:Match){
 }
 export function dispatch(input:Match,entry:LogEntry):Match{
  const m=clone(input),p=m.players[entry.player];if(!p)throw new Error('Jogador inválido.');
+ const before:[number,number]=[projectedHandCount(m,0),projectedHandCount(m,1)];
  if(entry.type==='mulligan'){
    if(m.phase!=='setup'||p.mulliganDone||p.locked)throw new Error('Mulligan indisponível.');
    const uids=entry.uids??[];if(uids.length>2||new Set(uids).size!==uids.length||uids.some(uid=>!p.hand.some(c=>c.uid===uid)))throw new Error('Escolha até duas cartas da mão.');
@@ -77,7 +88,16 @@ export function dispatch(input:Match,entry:LogEntry):Match{
    if(m.phase!=='telemetry')throw new Error('A rodada ainda não foi resolvida.');
    p.locked=true;if(m.players.every(p=>p.locked)){if(m.round===5){m.phase='showdown';m.showdown=runShowdown(m);}else nextRound(m);}
  }else throw new Error('Operação inválida.');
- m.log.push(clone(entry));m.version++;return m;
+ m.log.push(clone(entry));m.version++;
+ const activity=m.publicHandActivity??[[],[]];
+ for(const playerId of [0,1] as const){
+  const count=projectedHandCount(m,playerId),delta=count-before[playerId];
+  let kind:PublicHandActivity['kind']|null=delta>0?'gain':delta<0?'spend':null;
+  if(!kind&&playerId===entry.player){if(entry.type==='mulligan')kind='shuffle';else if(entry.type==='stage'||entry.type==='undo')kind='prepare';}
+  if(kind)activity[playerId]=[...activity[playerId],{seq:m.version,round:m.round,count,kind}].slice(-24);
+ }
+ m.publicHandActivity=activity;
+ return m;
 }
 export function exportReplay(m:Match){if(m.phase!=='showdown')throw new Error('Replay completo disponível após o Showdown.');return {format:'architecture-showdown-replay',contentVersion:m.contentVersion,engineVersion:m.engineVersion,seed:m.seed,names:m.players.map(p=>p.name),specialties:m.players.map(p=>p.specialty),log:clone(m.log),resultHash:hash(m.showdown)};}
 export function replay(record:ReturnType<typeof exportReplay>):Match{

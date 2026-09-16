@@ -30,7 +30,7 @@ describe('decks e mundo',()=>{
 describe('regras e sigilo',()=>{
  it('uma jogada pending não altera o grafo oficial nem revela o adversário',()=>{
   let m=ready('privacy');const before=clone(m.players[0].graph);m=dispatch(m,{type:'stage',player:0,command:{type:'configure',target:'data',config:{read:70}}});expect(m.players[0].graph).toEqual(before);expect(project(m,0).player.graph.edges.find(e=>e.id==='data')?.read).toBe(70);
-  const v=project(m,1);expect(Object.keys(v.opponent).sort()).toEqual(['locked','name']);expect(v).not.toHaveProperty('seed');expect(v).not.toHaveProperty('scenarios');expect(v.player).not.toHaveProperty('deck');expect(v.player).not.toHaveProperty('runtime');expect(v.player.telemetry).not.toHaveProperty('traces');expect(v.revealed[0]).not.toHaveProperty('heat');expect(JSON.stringify(v)).not.toContain('expectedStateVersion');
+  const v=project(m,1);expect(Object.keys(v.opponent).sort()).toEqual(['activity','handCount','locked','name']);expect(v.opponent).not.toHaveProperty('hand');expect(v).not.toHaveProperty('seed');expect(v).not.toHaveProperty('scenarios');expect(v.player).not.toHaveProperty('deck');expect(v.player).not.toHaveProperty('runtime');expect(v.player.telemetry).not.toHaveProperty('traces');expect(v.revealed[0]).not.toHaveProperty('heat');expect(JSON.stringify(v)).not.toContain('expectedStateVersion');
   m=dispatch(m,{type:'lock',player:0});expect(m.players[0].graph).toEqual(before);m=dispatch(m,{type:'lock',player:1});expect(m.players[0].graph.edges.find(e=>e.id==='data')?.read).toBe(70);expect(project(m,1).opponent).not.toHaveProperty('graph');
  });
  it('resolve uma disputa, devolve recursos e permite ajuste real',()=>{

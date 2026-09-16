@@ -35,7 +35,7 @@ await api(`/matches/${host.id}/lobby`,{action:'start'},host.token);
 async function send(player,type){
  const view=await api(`/matches/${host.id}`,undefined,player.token);
  if(view.phase!=='showdown'){
-  assert.deepEqual(Object.keys(view.opponent).sort(),['locked','name']);
+  assert.deepEqual(Object.keys(view.opponent).sort(),['activity','handCount','locked','name']);
   assert.ok(!('seed' in view));assert.ok(!('log' in view));
  }
  return api(`/matches/${host.id}/command`,{version:view.version,entry:{type}},player.token);
@@ -54,7 +54,7 @@ report.checks.push('Room creation/join, individual credentials, readiness, host 
 const solo=await api('/solo',{name:'Verificação deploy IA',specialty:'distributed',requestId:crypto.randomUUID()});
 assert.deepEqual(Object.keys(solo).sort(),['id','token']);
 let soloView=await api(`/matches/${solo.id}`,undefined,solo.token);
-assert.deepEqual(soloView.opponent,{name:'Arquiteto IA',locked:false,controller:'ai'});
+assert.deepEqual(soloView.opponent,{name:'Arquiteto IA',locked:false,handCount:5,activity:[],controller:'ai'});
 assert.equal(soloView.player.id,0);assert.ok(!('seed' in soloView));assert.ok(!('log' in soloView));
 async function soloCommand(type){
  soloView=await api(`/matches/${solo.id}`,undefined,solo.token);

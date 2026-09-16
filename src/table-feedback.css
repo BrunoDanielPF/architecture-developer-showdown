@@ -14,13 +14,13 @@
 .node-label.clustered .instances{position:static;order:-1;padding:2px 5px;border:1px solid #71dce866;border-radius:10px;background:#0b2633dc;color:#baf9fc;font-size:7px;letter-spacing:.08em;white-space:nowrap}
 .node-label.clustered .node-kind{display:none}
 .node-label.clustered .node-upgrades{position:absolute;left:50%;top:100%;transform:translateX(-50%);white-space:nowrap}
-.edge-label,.edge-label:hover,.edge-label:focus-visible,.edge-label.valid{width:auto;height:auto;min-width:38px;max-width:135px;font-size:10px;padding:5px 7px;gap:4px;overflow:visible}
-.edge-label>strong{font-size:10px;font-weight:700}
-.edge-label>small{display:block;font-size:8px}
-.edge-label>.protocol-mode{color:#d8b874;font-size:7px;font-weight:700;letter-spacing:.075em;line-height:1.2;white-space:nowrap}
-.edge-label>i{display:block;font-size:8px}
+.edge-label,.edge-label:hover,.edge-label:focus-visible,.edge-label.valid{width:auto;height:auto;min-width:0;max-width:86px;font-size:9px;padding:3px 5px;gap:3px;line-height:1;overflow:visible}
+.edge-label>strong{font-size:9px;font-weight:700}
+.edge-label>span:not(.edge-description){font-size:10px}
 .edge-label>.edge-description{display:none}
-.edge-label:hover>.edge-description,.edge-label:focus-visible>.edge-description{display:block;position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:195px;padding:10px;border:1px solid #679cac;background:#102636;color:#d9edf3;font-size:11px;line-height:1.5;white-space:normal;pointer-events:none;box-shadow:0 4px 15px #0008}
+.edge-label:hover>.edge-description,.edge-label:focus>.edge-description{display:flex;flex-direction:column;gap:5px;position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:210px;padding:9px;border:1px solid #679cac;background:#102636;color:#d9edf3;font-size:10px;line-height:1.4;white-space:normal;text-align:left;pointer-events:none;box-shadow:0 4px 15px #0008}
+.edge-description .protocol-mode{color:#d8b874;font-size:8px;font-weight:700;letter-spacing:.075em;line-height:1.2}
+.edge-description>small:last-child{font-size:8px;color:#91afc5}
 .architecture-attachment-icon{width:34px;min-height:31px;padding:3px 2px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1px solid color-mix(in srgb,var(--attachment-color),#fff 18%);border-radius:6px;background:color-mix(in srgb,var(--attachment-color) 18%,#0b202c);color:var(--attachment-color);box-shadow:0 3px 9px #0009,0 0 9px color-mix(in srgb,var(--attachment-color),transparent 65%);pointer-events:none;user-select:none}
 .architecture-attachment-icon svg{width:15px;height:15px;stroke-width:2.2;filter:drop-shadow(0 1px 2px #000)}
 .architecture-attachment-icon small{max-width:32px;color:#f2fbfc;font-size:5px;font-weight:800;line-height:1;letter-spacing:.035em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 2px #000}
@@ -150,7 +150,7 @@
  .game-shell .board-section .node-label{width:150px;min-height:92px;padding:9px 10px;gap:5px;background:#132d3cf2;border-color:#82bacb;box-shadow:0 8px 0 #07131b,0 15px 24px #0008}
  .game-shell .board-section .node-label strong{font-size:15px;max-width:130px;overflow-wrap:anywhere}
  .game-shell .board-section .node-label:hover,.game-shell .board-section .node-label:focus-visible{transform:translateY(-3px);box-shadow:0 9px 0 #07131b,0 19px 28px #0009}
- .edge-label,.edge-label:hover,.edge-label:focus-visible,.edge-label.valid{min-width:48px;padding:5px 8px;border-radius:11px;background:#0e2432f2;box-shadow:0 4px 9px #0007}
+ .edge-label,.edge-label:hover,.edge-label:focus-visible,.edge-label.valid{min-width:0;padding:3px 6px;border-radius:7px;background:#0e2432f2;box-shadow:0 4px 9px #0007}
  .edge-label>strong{font-size:9px}
 }
 

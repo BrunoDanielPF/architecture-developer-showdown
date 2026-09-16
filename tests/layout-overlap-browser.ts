@@ -6,6 +6,7 @@ import {chromium} from 'playwright';
 import {createApp} from '../server/app';
 import {createMatch,dispatch} from '../packages/session';
 import {applyCommand} from '../packages/rules';
+import {runShowdown} from '../packages/simulation/showdown';
 
 const dataDir=await mkdtemp(path.join(tmpdir(),'showdown-layout-')),denseId='cacecacecacecace',denseTokens:[string,string]=['dense-layout-player','dense-layout-opponent'];
 let dense=createMatch('dense-cache-layout',['Bruno','Arquiteto IA']);dense=dispatch(dense,{type:'ready',player:0});dense=dispatch(dense,{type:'ready',player:1});dense.id=denseId;
@@ -17,6 +18,9 @@ for(const [index,target] of ['data','next-cache-edge'].entries()){
 }
 dense.players[0]=densePlayer;
 await writeFile(path.join(dataDir,`room-${denseId}.json`),JSON.stringify({match:dense,tokens:denseTokens}));
+const showdownId='cacecacecacecacf',showdownTokens:[string,string]=['showdown-layout-player','showdown-layout-opponent'];
+const showdown=structuredClone(dense);showdown.id=showdownId;showdown.phase='showdown';showdown.round=5;showdown.showdown=runShowdown(showdown);
+await writeFile(path.join(dataDir,`room-${showdownId}.json`),JSON.stringify({match:showdown,tokens:showdownTokens}));
 const app=await createApp({dataDir,serveDir:path.resolve('dist'),now:()=>100000});
 const base=await app.listen({host:'127.0.0.1',port:0});
 const browser=await chromium.launch({channel:'msedge',headless:true,args:['--enable-webgl']});
@@ -57,5 +61,16 @@ try{
  for(let index=0;index<await denseLabels.count();index++)denseBoxes.push({kind:await denseLabels.nth(index).getAttribute('aria-label')??`nó ${index}`,box:(await denseLabels.nth(index).boundingBox())!});
  expectMargin(denseBoxes);
  await page.screenshot({path:path.resolve('docs/evidence/layout-spacing-diagonal.png')});
- console.log('Browser: cadeias horizontais e diagonais mantêm margem visual entre todos os componentes.');
+ await page.setViewportSize({width:1904,height:902});await page.goto(`${base}/?room=${showdownId}&token=${showdownTokens[0]}`);
+ await dismissBriefing();
+ await page.locator('.showdown-shell .node-label').first().waitFor();await page.waitForTimeout(800);
+ const showdownLabels=page.locator('.showdown-shell .node-label'),showdownBoxes=[];
+ for(let index=0;index<await showdownLabels.count();index++)showdownBoxes.push({kind:await showdownLabels.nth(index).getAttribute('aria-label')??`nó ${index}`,box:(await showdownLabels.nth(index).boundingBox())!});
+ expectMargin(showdownBoxes);
+ const edgeLabels=page.locator('.showdown-shell .edge-label');
+ for(let index=0;index<await edgeLabels.count();index++){
+  const bounds=await edgeLabels.nth(index).boundingBox();assert.ok(bounds&&bounds.width<86,'O Showdown deve manter protocolos compactos sobre as linhas.');
+ }
+ await page.screenshot({path:path.resolve('docs/evidence/layout-spacing-showdown.png')});
+ console.log('Browser: planejamento e Showdown mantêm componentes separados e protocolos compactos.');
 }finally{await browser.close();await app.close();}

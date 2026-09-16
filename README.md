@@ -135,7 +135,7 @@ A mesa usa geometria 3D com faces HTML presas às transformações da cena. Mode
 
 - `Architecture_Showdown_GDD_v0.3.docx`: regras, mecânicas e experiência.
 - `Architecture_Showdown_TDD_v0.1.docx`: arquitetura técnica.
-- A instrução do usuário prevalece sobre trechos conflitantes dos documentos: **mão e arquitetura adversária ficam ocultas até o Showdown**.
+- A instrução do usuário prevalece sobre trechos conflitantes dos documentos: **identidades das cartas na mão e arquitetura adversária ficam ocultas até o Showdown**. Durante a partida, apenas o verso das cartas, o tamanho da mão e eventos genéricos de entrada, saída ou reorganização ficam visíveis ao outro jogador.
 - A imagem fornecida orienta composição e perspectiva; não foi copiada como interface ou textura.
 
 Este é o jogo com multiplayer por salas para dois participantes, mantendo o escopo do vertical slice. Não inclui matchmaking, contas, ranking ou infraestrutura de nuvem real. A simulação é um modelo de jogo com unidades e trade-offs definidos, não um benchmark de produtos cloud. A viabilidade técnica de três estratégias foi medida; balanceamento competitivo e diversão ainda dependem de playtests humanos. A validação visual cobre desktop e janela de aplicativo a partir de 766 px, não telefone estreito. A mesa 3D é carregada sob demanda: a home não baixa esse módulo ao abrir. O chunk da mesa ainda produz um aviso não bloqueante de tamanho (~920 kB antes de gzip).

@@ -1,0 +1,67 @@
+.opponent-hand{
+ --opponent-card-width:150px;
+ --opponent-card-height:192px;
+ position:absolute;z-index:38;top:-28px;left:50%;transform:translateX(-50%);
+ width:min(620px,calc(100vw - 430px));display:flex;flex-direction:column;align-items:center;gap:3px;
+ pointer-events:none;filter:drop-shadow(0 12px 18px #000a)
+}
+.opponent-hand-cards{order:0;display:flex;justify-content:center;align-items:flex-start;width:100%;height:var(--opponent-card-height);padding:0;overflow:visible}
+.opponent-card-back{
+ box-sizing:border-box;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+ flex:none;width:var(--opponent-card-width);height:var(--opponent-card-height);margin-left:calc(var(--opponent-card-width) * -.66);
+ padding:9px;border:2px solid #8da4b1;border-radius:7px;
+ background:linear-gradient(155deg,#415665,#233646 42%,#111e2c 87%);
+ box-shadow:0 6px 0 #071018,0 15px 28px #000a;
+ transform:translateY(var(--opponent-rise)) rotate(var(--opponent-angle));transform-origin:50% -12%;
+ opacity:1;z-index:var(--opponent-order);
+ transition:width .35s cubic-bezier(.2,.8,.2,1),margin .35s cubic-bezier(.2,.8,.2,1),transform .35s cubic-bezier(.2,.8,.2,1),opacity .24s ease
+}
+.opponent-card-back:first-child{margin-left:0}
+.opponent-card-back:before{content:'';position:absolute;inset:6px;border:1px solid #bad0d35c;border-radius:3px;pointer-events:none}
+.opponent-card-back:after{content:'';position:absolute;inset:18px;border:1px solid #9bb7bd30;border-radius:2px;pointer-events:none}
+.opponent-card-corner,.opponent-card-footer{z-index:1;align-self:flex-start;color:#a9c3cc;font-size:8px;font-weight:800;letter-spacing:.14em;text-shadow:0 1px 3px #000}
+.opponent-card-footer{align-self:center;font-size:7px;letter-spacing:.11em;color:#88a6b1}
+.opponent-card-mark{z-index:1;display:grid;place-items:center;width:78px;height:78px;border:2px solid #92b9c175;border-radius:50%;color:#d0e7eb;background:radial-gradient(circle,#52758655,#1a2e3a88 70%);box-shadow:0 0 0 7px #9fc4c119,0 0 20px #85d2d02b}
+.opponent-hand-heading{order:1;display:flex;align-items:center;justify-content:center;gap:8px;max-width:100%;padding:4px 9px;border:1px solid #5a788b8c;border-radius:4px;background:#0c1d2bf0;color:#bacbd5;font-size:9px;font-weight:800;letter-spacing:.1em;white-space:nowrap}
+.opponent-hand-avatar{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#3d5265;color:#e1d9f0;font-size:10px}
+.opponent-hand-name{max-width:135px;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}
+.opponent-hand-count{color:#8bc5cf}.opponent-hand-ready{display:flex;align-items:center;gap:3px;color:#9cdbb6}
+.opponent-hand-activity{order:2;min-height:13px;display:flex;align-items:center;gap:5px;color:#91adba;font-size:8px;font-weight:800;letter-spacing:.11em;text-shadow:0 1px 5px #000}
+.opponent-hand .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.opponent-activity-dot{width:5px;height:5px;border-radius:50%;background:#9be5e5;box-shadow:0 0 8px #7ce6e6;animation:opponent-signal .47s ease-in-out both}
+.opponent-card-back.entering{width:0;margin-left:0;opacity:0;transform:translateY(-95px) scale(.7) rotate(var(--opponent-angle))}
+.opponent-card-back.leaving{width:0;margin-left:0;opacity:0;transform:translateY(65px) scale(.7) rotate(var(--opponent-angle))}
+.opponent-hand-locked .opponent-card-back{filter:saturate(.7);border-color:#779a96}
+@keyframes opponent-signal{0%{opacity:0;transform:scale(.3)}55%{opacity:1;transform:scale(1.5)}100%{opacity:.65;transform:scale(1)}}
+
+@media(min-width:761px) and (min-height:501px){
+ main.game-shell.opponent-seat-open .match-bar{display:none}
+ main.game-shell.opponent-seat-open .telemetry-strip{top:218px}
+ main.game-shell.opponent-seat-open .sync-dock{left:auto;right:91px;top:145px;transform:none;width:185px;max-width:185px;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+ main.game-shell.opponent-seat-open .board-toolbar{left:245px;right:auto;top:159px;transform:none}
+ main.game-shell.opponent-seat-open .board-wordmark{opacity:0}
+}
+@media(min-width:761px) and (max-width:1100px) and (min-height:501px){
+ .opponent-hand{--opponent-card-width:132px;--opponent-card-height:182px;top:-23px;width:min(500px,calc(100vw - 310px))}
+ main.game-shell.opponent-seat-open .telemetry-strip{top:215px}
+ main.game-shell.opponent-seat-open .sync-dock{right:73px;top:141px;width:155px;max-width:155px}
+ main.game-shell.opponent-seat-open .board-toolbar{left:180px;top:156px}
+}
+@media(min-width:761px) and (max-width:900px) and (min-height:501px){
+ .opponent-hand{--opponent-card-width:98px;--opponent-card-height:170px;top:-18px;width:350px}
+ .opponent-card-corner{font-size:6px}.opponent-card-footer{font-size:5px}.opponent-card-mark{width:60px;height:60px}
+ main.game-shell.opponent-seat-open .telemetry-strip{top:204px}
+ main.game-shell.opponent-seat-open .sync-dock{right:72px;top:140px;width:120px;max-width:120px}
+}
+@media(max-width:760px),(max-height:500px){
+ main.game-shell .opponent-hand{--opponent-card-width:clamp(118px,calc(50vw - 31px),170px);--opponent-card-height:185px;position:relative;inset:auto;transform:none;order:1;width:100%;min-height:0;gap:7px;padding:10px 8px 12px;border:1px solid #516c805e;border-radius:5px;background:linear-gradient(120deg,#142939,#102232);filter:none}
+ main.game-shell .opponent-hand-heading{order:0;background:transparent;border:0;padding:0;font-size:10px}
+ main.game-shell .opponent-hand-cards{order:1;height:var(--opponent-card-height);padding:0}
+ main.game-shell .opponent-card-back{margin-left:calc(var(--opponent-card-width) * -.89);transform:translateY(calc(var(--opponent-rise) * .25)) rotate(calc(var(--opponent-angle) * .45))}
+ main.game-shell .opponent-card-back:first-child{margin-left:0}
+ main.game-shell .opponent-card-back.entering{transform:translateY(-65px) scale(.7) rotate(calc(var(--opponent-angle) * .45))}
+ main.game-shell .opponent-card-back.leaving{transform:translateY(55px) scale(.7) rotate(calc(var(--opponent-angle) * .45))}
+ main.game-shell .opponent-card-mark{width:70px;height:70px}
+ main.game-shell .opponent-hand-activity{order:2;font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){.opponent-card-back{transition:none}.opponent-activity-dot{animation:none}}

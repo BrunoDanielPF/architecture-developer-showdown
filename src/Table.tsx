@@ -14,10 +14,11 @@ import {edgeVisualModel,nodeVisualModel} from './architecture-visual-model';
 import {communicationVisualModel} from './communication-visual-model';
 import {CommunicationFlow} from './communication-visuals';
 import {TABLE_NAVIGATION} from './table-navigation';
+import {initialTableZoom} from './table-camera';
 const cameraOptions={position:[0,27,15.5] as [number,number,number],zoom:40,near:.1,far:100};
 const colors:Record<string,string>={client:'#b4c5d4',api:'#69b8cc',database:'#b498eb',payment:'#e8b365',cache:'#b498eb',queue:'#e8b365',worker:'#69b8cc',balancer:'#69b8cc',cdn:'#b498eb',storage:'#b498eb'};
 const kindLabels:Record<string,string>={client:'ENTRADA',api:'SERVIÇO',database:'DADOS',payment:'PAGAMENTO',cache:'CACHE',queue:'FILA',worker:'PROCESSAMENTO',balancer:'DISTRIBUIÇÃO',cdn:'ENTREGA',storage:'ARMAZENAMENTO'};
-type Props={focusArchitecture?:boolean;market?:ReactNode[];scenario?:ReactNode;graph:Graph;targets:Target[];selected?:string;dragTarget?:string;dragging?:boolean;onTarget:(id:string)=>void;onInspect:(id:string)=>void;telemetry?:Partial<Telemetry>;showActivity?:boolean;resetKey?:string};
+type Props={focusArchitecture?:boolean;expandedLayout?:boolean;market?:ReactNode[];scenario?:ReactNode;graph:Graph;targets:Target[];selected?:string;dragTarget?:string;dragging?:boolean;onTarget:(id:string)=>void;onInspect:(id:string)=>void;telemetry?:Partial<Telemetry>;showActivity?:boolean;resetKey?:string};
 type ArchitectureModuleProps={node:Graph['nodes'][number];color:string;valid:boolean;active:boolean;hot:boolean;utilization?:number;events:{onClick:(e:React.MouseEvent)=>void;onDragOver:(e:React.DragEvent)=>void;onDrop:(e:React.DragEvent)=>void}};
 function routeDirection(points:[number,number,number][],fromEnd=false){
  if(fromEnd){for(let index=points.length-1;index>0;index--){const direction=new THREE.Vector3(...points[index]).sub(new THREE.Vector3(...points[index-1]));if(direction.lengthSq()>.0001)return direction.normalize();}}
@@ -84,14 +85,14 @@ function ArchitectureModule({node,color,valid,active,hot,utilization,events}:Arc
    </button></Html>
  </group>;
 }
-function Scene({graph,targets,onTarget,onInspect,telemetry,showActivity,selected,dragTarget,resetKey,market=[],scenario,resetControl,focusArchitecture}:Props&{resetControl:{current:(()=>void)|null}}){
- const controls=useRef<any>(null);const {camera,size}=useThree();const tableGraph=useMemo(()=>spreadTableGraph(graph),[graph]);
+function Scene({graph,targets,onTarget,onInspect,telemetry,showActivity,selected,dragTarget,resetKey,market=[],scenario,resetControl,focusArchitecture,expandedLayout}:Props&{resetControl:{current:(()=>void)|null}}){
+ const controls=useRef<any>(null);const {camera,size}=useThree();const tableGraph=useMemo(()=>spreadTableGraph(graph,expandedLayout),[graph,expandedLayout]);
  useEffect(()=>{
   const resetCamera=()=>{
    const orbit=controls.current;
    if(orbit){orbit.enableDamping=false;orbit.update();}
    camera.position.set(0,27,15.5);camera.lookAt(0,0,1.6);
-   if(camera instanceof THREE.OrthographicCamera){camera.zoom=focusArchitecture?Math.min(size.width/14,size.height/11.5):Math.min(size.width/29,size.height/22.4);camera.updateProjectionMatrix();}
+   if(camera instanceof THREE.OrthographicCamera){camera.zoom=initialTableZoom(size.width,size.height,Boolean(focusArchitecture));camera.updateProjectionMatrix();}
    orbit?.target.set(0,0,1.6);orbit?.update();
    if(orbit)orbit.enableDamping=true;
   };
@@ -129,8 +130,7 @@ function Scene({graph,targets,onTarget,onInspect,telemetry,showActivity,selected
        <mesh position={[forwardPosition.x,.5,forwardPosition.z]} quaternion={forwardRotation}><coneGeometry args={[.10,.25,3]}/><meshBasicMaterial color={communication.requestColor}/></mesh>
        {communication.hasResponse&&<mesh position={[returnPosition.x,.5,returnPosition.z]} quaternion={returnRotation}><coneGeometry args={[.09,.22,3]}/><meshBasicMaterial color={communication.responseColor}/></mesh>}
        <Html position={[(a.x+b.x)/2,.7,(a.z+b.z)/2]} center zIndexRange={[10,0]}><button data-target={e.id} data-balanced-lanes={visual.laneCount} data-edge-effects={visual.effects.join(' ')} data-communication-mode={communication.mode} data-communication-synchronous={String(communication.synchronous)} data-communication-persistent={String(communication.persistent)} data-communication-response={String(communication.hasResponse)} data-communication-acknowledgement={String(communication.hasAcknowledgement)} className={`edge-label ${ids.has(e.id)?'valid':''} ${dragTarget===e.id?'drop-active':''}`} {...targetEvents(e.id)} title={`${info.name} · ${communication.label}: ${info.description} ${a.name} → ${b.name}`} aria-label={`${info.name}, ${communication.label.toLocaleLowerCase('pt-BR')}: ${a.name} para ${b.name}. ${info.description}`}>
-         <strong>{info.name}</strong><span>{communication.hasResponse?'↔':'→'}</span><small className="protocol-mode">{communication.label}</small><span className="edge-description">{info.description}</span>{e.read!==100||e.write!==100?<small>R {Math.round(e.read)} · W {Math.round(e.write)}</small>:null}
-         {e.policies.length>0&&<i>{e.policies.map(c=>CATALOG[c]?.name).join(' · ')}</i>}
+         <strong>{info.name}</strong><span aria-hidden="true">{communication.hasResponse?'↔':'→'}</span><span className="edge-description"><small className="protocol-mode">{communication.label}</small><span>{info.description}</span><small>Leitura {Math.round(e.read)}% · escrita {Math.round(e.write)}%{e.policies.length?` · ${e.policies.map(c=>CATALOG[c]?.name).join(', ')}`:''}</small></span>
        </button></Html>
      </group>;
    })}

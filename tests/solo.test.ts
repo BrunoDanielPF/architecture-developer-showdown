@@ -21,7 +21,7 @@ describe('partida solo autoritativa',()=>{
   for(const body of [{name:' ',specialty:'balanced'},{name:'A',specialty:'__proto__'},{name:'A',specialty:'balanced',requestId:'invalid'}])expect((await req('/solo',body)).status).toBe(400);
   const body={name:'Pessoa',specialty:'balanced',requestId:randomUUID()};
   const [a,b]=await Promise.all([req('/solo',body),req('/solo',body)]);expect(a.body).toEqual(b.body);expect(Object.keys(a.body).sort()).toEqual(['id','token']);
-  const v=await view(a.body);expect(v.opponent).toEqual({name:'Arquiteto IA',locked:false,controller:'ai'});
+  const v=await view(a.body);expect(v.opponent).toEqual({name:'Arquiteto IA',locked:false,handCount:5,activity:[],controller:'ai'});
   for(const key of ['seed','log','bot','tokens','soloKey'])expect(v).not.toHaveProperty(key);
   expect(v.player.id).toBe(0);expect((await snapshot(a.body)).tokens[1]).toBe('');
   expect((await req(`/matches/${a.body.id}`)).status).toBe(400);

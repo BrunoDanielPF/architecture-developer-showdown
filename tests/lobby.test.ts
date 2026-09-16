@@ -53,7 +53,7 @@ describe('salas multiplayer com código',()=>{
   expect((await send(a,'ready')).body.player.id).toBe(0);const v=(await send(b,'ready')).body;expect(v.phase).toBe('planning');
   const snapshot=JSON.parse(await readFile(path.join(dataDir,`room-${a.id}.json`),'utf8'));expect(snapshot.tokens).toEqual([a.token,b.token]);
   await app.close();time+=46000;app=await createApp({dataDir,now:()=>time});
-  const restored=(await req(`/matches/${a.id}`,undefined,a.token)).body;expect(restored.phase).toBe('telemetry');expect(Object.keys(restored.opponent).sort()).toEqual(['locked','name']);expect(restored).not.toHaveProperty('seed');expect(restored).not.toHaveProperty('log');
+  const restored=(await req(`/matches/${a.id}`,undefined,a.token)).body;expect(restored.phase).toBe('telemetry');expect(Object.keys(restored.opponent).sort()).toEqual(['activity','handCount','locked','name']);expect(restored).not.toHaveProperty('seed');expect(restored).not.toHaveProperty('log');
   expect((await req(`/matches/${a.id}/lobby`,undefined,a.token)).body.online).toEqual([true,false]);
   const guest=(await req(`/matches/${a.id}`,undefined,b.token)).body;expect(guest.player.id).toBe(1);expect(guest.player.hand).not.toEqual(restored.player.hand);
  });
