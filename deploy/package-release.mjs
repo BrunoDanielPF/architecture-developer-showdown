@@ -8,11 +8,14 @@ if(!previous?.startsWith('/var/www/architecture-developer-showdown/releases/'))t
 const tests=Number(testsArg);
 if(!Number.isInteger(tests)||tests<1)throw new Error('Informe a quantidade de testes aprovados.');
 const assets=(await readdir('dist/assets')).map(name=>`dist/assets/${name}`);
+const tracked=spawnSync('git',['ls-files','-z','--','deploy','packages','server'],{encoding:'buffer'});
+if(tracked.status!==0)throw new Error('Falha ao listar arquivos de runtime versionados.');
+const runtimeFiles=tracked.stdout.toString('utf8').split('\0').filter(Boolean);
+if(!runtimeFiles.includes('server/app.ts')||!runtimeFiles.includes('server/index.ts'))throw new Error('Backend incompleto no repositório.');
 const files=[
- 'deploy/architecture-developer-showdown.service','deploy/install.sh','deploy/nginx-http.conf','deploy/nginx-https.conf','deploy/update.sh','deploy/verify-public.mjs',
+ ...runtimeFiles,
  'dist/index.html',...assets,
- 'package-lock.json','package.json','packages/content/catalog.ts','packages/domain/random.ts','packages/domain/types.ts','packages/rules/index.ts','packages/session/index.ts','packages/simulation/index.ts','packages/simulation/showdown.ts','packages/world/index.ts',
- 'server/app.ts','server/bot.ts','server/index.ts','server/lobby.ts','server/round-clock.ts','tests/production-smoke.ts'
+ 'package-lock.json','package.json','tests/production-smoke.ts'
 ].sort();
 const entries={};
 for(const file of files){const data=await readFile(file);entries[file]={sha256:createHash('sha256').update(data).digest('hex'),bytes:data.length};}
