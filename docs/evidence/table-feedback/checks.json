@@ -4,6 +4,8 @@
     "pan moves board and preserves hand bounds",
     "recenter restores camera",
     "protocol name and description visible",
+    "single card DOM during drag",
+    "hand reflows on lift and invalid return",
     "card drag and placement",
     "round result survives advance and reload",
     "766px and 390px without horizontal overflow"

@@ -2,6 +2,7 @@ import {describe,it,expect} from 'vitest';
 import {createMatch,dispatch,project} from '../packages/session';
 import {initialWorld,reveal} from '../packages/world';
 import {metricChange} from '../src/round-feedback';
+import {incident,reconcileIncidents} from '../packages/simulation/incidents';
 
 describe('contexto e resultados persistentes',()=>{
  it('compara medições reais, mantém o resultado na próxima rodada e após reprojetar a sessão',()=>{
@@ -26,7 +27,7 @@ describe('contexto e resultados persistentes',()=>{
  });
  it('filtra cada medição conforme a instrumentação daquela rodada e mantém o adversário privado',()=>{
   const m=createMatch('measurement-privacy'),p=m.players[0];
-  const hidden={...p.telemetry,observed:false,diagnostic:false,traces:['private trace'],incidents:[{type:'secret',nodeId:'db',detail:'internal'}]};
+  const hidden={...p.telemetry,observed:false,diagnostic:false,traces:['private trace'],incidents:reconcileIncidents([incident('stale_data','db','internal')],undefined,1)};
   p.runtime.history=[hidden,{...hidden,observed:true,diagnostic:false},{...hidden,observed:true,diagnostic:true}];
   const v=project(m,0),history=v.measurements!;
   expect(history[0].telemetry).not.toHaveProperty('nodes');

@@ -47,13 +47,13 @@ describe('partida via HTTP entre dois clientes',()=>{
    await app.close();
    const snapshot=JSON.parse(await readFile(path.join(dataDir,`room-${room.id}.json`),'utf8'));
    expect(snapshot.match.version).toBe(version+1);
-   // Unfinished 0.2 games can upgrade because 0.3 changes only Showdown cost units.
+   // Unfinished pre-0.4 games normalize their additive incident history on load.
    snapshot.match.engineVersion='0.2.0';
    await writeFile(path.join(dataDir,`room-${room.id}.json`),JSON.stringify(snapshot));
    app=await createApp({dataDir});base=await app.listen({port:0,host:'127.0.0.1'});
    for(const i of [0,1]){const restored=(await request(url,room.tokens[i])).body;const {serverNow:_,...clock}=restored.clock;const {serverNow:__,...previousClock}=before[i].body.clock;expect(clock).toEqual(previousClock);expect({...restored,clock:undefined}).toEqual({...before[i].body,clock:undefined});}
    expect((await request(url+'/command',room.tokens[0],{version:version+1,entry:{type:'lock'}})).status).toBe(200);
-   expect(JSON.parse(await readFile(path.join(dataDir,`room-${room.id}.json`),'utf8')).match.engineVersion).toBe('0.3.0');
+   expect(JSON.parse(await readFile(path.join(dataDir,`room-${room.id}.json`),'utf8')).match.engineVersion).toBe('0.4.0');
  });
  it('constrói grafos distintos por 5 rodadas e reproduz o Showdown por replay',async()=>{
    const room=await create('flashcart-2026'),url=`/matches/${room.id}`;

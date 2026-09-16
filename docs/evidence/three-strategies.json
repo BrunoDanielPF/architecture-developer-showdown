@@ -219,9 +219,18 @@
       ],
       "incidents": [
         {
+          "kind": "connection_exhaustion",
           "type": "Exaustão de conexões",
+          "severity": "warning",
+          "locus": {
+            "type": "node",
+            "id": "strategy-worker-6"
+          },
           "nodeId": "strategy-worker-6",
-          "detail": "168 conexões solicitadas para limite 160."
+          "detail": "168 conexões solicitadas para limite 160.",
+          "id": "incident:connection_exhaustion:node:strategy-worker-6",
+          "phase": "ongoing",
+          "firstSeenRound": 0
         }
       ],
       "traces": [

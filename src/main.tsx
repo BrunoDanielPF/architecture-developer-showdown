@@ -8,3 +8,4 @@ import './game.css';
 import './turn-flow.css';
 import './responsive.css';
 import './table-feedback.css';
+import './incidents.css';

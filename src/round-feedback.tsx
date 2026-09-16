@@ -42,7 +42,7 @@ export function RoundResult({view}:{view:PlayerView}){
   <h3>Rodada {latest.round} resolvida</h3><p>{view.revealed[latest.round-1]?.title}</p>
   <small>Comparação com {before?.round?`a rodada ${before.round}`:'a loja inicial'}. Inclui o cenário e as decisões aplicadas.</small>
   <div className="result-changes">{metrics.map(m=><div key={m.key}><strong>{m.label}</strong><MetricTrend value={t[m.key]} previous={before?.telemetry[m.key]} unit={m.unit} lower={m.lower}/></div>)}</div>
-  <p>{t.observed?(t.incidents?.map(i=>`${i.type}: ${i.detail}`).join(' ')||'Sem incidentes detectados nesta medição.'):'Tempos e erros refletem a experiência dos usuários. Adicione instrumentação para investigar os componentes.'}</p>
+  <p>{t.observed?(t.incidents?.map(i=>i.phase==='recovered'?`Recuperado: ${i.type}.`:`${i.type}: ${i.detail}`).join(' ')||'Sem incidentes detectados nesta medição.'):'Tempos e erros refletem a experiência dos usuários. Adicione instrumentação para investigar os componentes.'}</p>
   {t.diagnostic&&<details><summary>Investigar causas</summary>{t.traces?.map((trace,i)=><p key={i}>{trace}</p>)}</details>}
  </section>;
 }

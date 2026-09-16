@@ -24,7 +24,7 @@ Abra http://127.0.0.1:3001/.
 
 ## Jogar
 
-1. Na home, escolha **Jogar contra IA**, **Criar sala** para convidar alguém ou **Entrar com código**. Contra IA, informe apenas seu nome e especialização: o Arquiteto IA ocupa o outro lado e decide sozinho. No multiplayer, cada pessoa escolhe seu próprio perfil e joga na própria sessão. O **Tutorial** tem nove etapas, com exemplos interativos de esforço (EC), ações, reposição entre rodadas, compra e implantação. Clicar nos indicadores de EC ou ações da mesa abre a explicação correspondente.
+1. Na home, escolha o **Desafio diário**, **Jogar contra IA**, **Criar sala** para convidar alguém ou **Entrar com código**. Contra IA, informe apenas seu nome e especialização: o Arquiteto IA ocupa o outro lado e decide sozinho. No multiplayer, cada pessoa escolhe seu próprio perfil e joga na própria sessão. O **Tutorial** tem nove etapas, com exemplos interativos de esforço (EC), ações, reposição entre rodadas, compra e implantação. Clicar nos indicadores de EC ou ações da mesa abre a explicação correspondente.
 2. No setup, cada jogador recebe cinco cartas e pode trocar até duas, uma única vez. Confirme sua preparação; o adversário confirma a dele. No modo solo, a IA faz isso automaticamente.
 3. Cada rodada revela um Scenario Card e abre **45 segundos de planejamento simultâneo**. A trilha à direita mostra rodadas 1–5 e Showdown, com cronômetro. O contexto acumula mudanças persistentes e expira alterações temporárias.
 4. Clique em uma carta ou arraste até um encaixe destacado. Configure os parâmetros e prepare a implantação. Destaques indicam apenas compatibilidade estrutural.
@@ -34,6 +34,8 @@ Abra http://127.0.0.1:3001/.
 8. Ao confirmar, você aguarda na sua mesa enquanto o outro planeja. Quando os dois confirmam, ou o prazo termina, o servidor resolve as decisões. No timeout, confirma o que já foi preparado e preserva o EC restante. Se uma pesquisa estiver pendente, escolhe a primeira carta revelada e descarta as demais. Compra disputada usa prioridade determinística; o perdedor recupera EC/ação e recebe uma janela de ajuste de 45 segundos.
 9. A telemetria aparece na mesma mesa por **8 segundos**, depois o próximo contexto abre automaticamente. Ambos podem continuar antes. Observe latência, erros, vazão e custo. Instrumentação adiciona detalhes de componentes/incidentes; tracing adiciona causas. Não há pontuação de jogadas durante a partida.
 10. Após cinco rodadas, o Showdown congela e revela ambos os grafos. Execute as seis categorias, alterne a arquitetura visualizada e abra as explicações do resultado.
+
+Incidentes observados também aparecem diretamente sobre o grafo: fila acumulada, estouro de conexões, tempestade de cache e pacotes de retry têm efeitos próprios. A camada visual prioriza até quatro ocorrências, destaca criticidade e acompanha o ciclo disparado → em andamento → recuperado. Sem instrumentação ou tracing, detalhes privados continuam ocultos; um resumo textual acessível acompanha os efeitos.
 
 Budget é o limite de custo mensal, separado de EC. Excedê-lo é permitido, mas reduz a eficiência de custo. Pesos de leitura que somam mais de 100 são normalizados entre as saídas do nó; ramificar não duplica leituras atendidas. Escritas representam ramificações de trabalho, como persistir um pedido e chamar o pagamento.
 
@@ -48,6 +50,14 @@ Há um nível de dificuldade: um planejador por heurísticas avalia a própria a
 **Home → Retomar sessão** retorna à partida. Os prazos continuam fora da mesa e durante desconexões. `sessionStorage` mantém a credencial ao recarregar a mesma aba; fechar a aba pode perdê-la. A API e as sessões locais antigas continuam compatíveis, mas novas partidas pela home usam IA ou sala multiplayer. Não há alternância para controlar a IA.
 
 Critérios, evidências e limites desta implementação: [aceitação do modo IA](docs/ai-acceptance.md).
+
+## Desafio diário
+
+O desafio muda à meia-noite no fuso `America/Sao_Paulo`. Todas as pessoas recebem no mesmo dia o mesmo perfil, ordem de contextos e baralhos, sem exposição da seed ao navegador. A home apresenta três objetivos de resultado — desempenho no Showdown, orçamento e estabilidade — e a medalha bronze, prata ou ouro só é calculada após a partida.
+
+`GET /api/challenges/daily` retorna o briefing público. `POST /api/challenges/daily/start` recebe `name` e `requestId`, cria uma partida contra a IA e pode ser repetido com o mesmo identificador sem duplicar a tentativa. O estado autoritativo continua persistido em disco e pode ser retomado na mesma aba.
+
+Em produção, defina `DAILY_CHALLENGE_SECRET` com ao menos 24 caracteres. Sem essa variável, o servidor gera uma chave em `DATA_DIR/.daily-challenge-secret`; `DATA_DIR` precisa ser persistente entre versões. Tanto `data/` quanto o arquivo de segredo são ignorados pelo Git.
 
 ## Salas multiplayer
 
@@ -84,7 +94,7 @@ npm run demo:replay
 
 Gera `docs/evidence/demo-replay.json`, uma partida completa com ações legais. Use **Reproduzir uma partida salva** no menu inicial.
 
-Motor atual: **0.3.0**, conteúdo **0.1.0**. Replays finais de versões anteriores são rejeitados explicitamente. Partidas ainda em andamento em 0.2 são atualizadas ao carregar: 0.3 altera apenas a comparação final de custo, preservando as regras e a simulação das rodadas anteriores. Partidas de versões mais antigas precisam ser reiniciadas.
+Motor atual: **0.4.0**, conteúdo **0.1.0**. Replays finais de versões anteriores são rejeitados explicitamente. Partidas ainda em andamento em 0.2 ou 0.3 são atualizadas ao carregar: 0.4 normaliza o contrato versionado de incidentes, preservando as regras e a simulação das rodadas anteriores. Partidas de versões mais antigas precisam ser reiniciadas.
 
 ## Verificação
 
@@ -94,7 +104,7 @@ npm run test:e2e
 npm run test:production
 ```
 
-- `npm test`: 44 testes na verificação de 2026-09-11, incluindo regras, causalidade, três estratégias, transporte HTTP, salas, disputa de vaga, sigilo, reinício, prazos, reconexão e IA. As suítes executam 24 partidas sistêmicas e mais 24 partidas completas contra o planejador automático.
+- `npm test`: cobre regras, causalidade, três estratégias, contrato e ciclo de incidentes, desafio diário, transporte HTTP, salas, disputa de vaga, sigilo, reinício, prazos, reconexão e IA. As suítes também executam partidas sistêmicas e partidas completas contra o planejador automático.
 - `test:e2e`: partida completa pela API usando dois clientes HTTP reais, sigilo, conflito de versão, reinício e replay. Não é uma suíte de automação de navegador.
 - `test:production`: build e smoke test de HTML, assets e API no servidor de produção local.
 - Interações visuais foram verificadas no navegador do Codex. Evidências e limites estão em `design-qa.md` e `docs/completion-audit.md`.

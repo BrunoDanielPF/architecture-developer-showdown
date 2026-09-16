@@ -1,4 +1,4 @@
-export type Session={id:string;tokens:string[];mode:'hotseat'|'remote'|'solo';actor:number;online?:boolean};
+export type Session={id:string;tokens:string[];mode:'hotseat'|'remote'|'solo'|'daily';actor:number;online?:boolean};
 export type LobbyView={code:string;status:'waiting'|'playing'|'closed';player:number;seats:({name:string;specialty:string;ready:boolean}|null)[];online:boolean[];revision:number;expiresAt:number};
 export function requestId(){
  const bytes=crypto.getRandomValues(new Uint8Array(16));bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;

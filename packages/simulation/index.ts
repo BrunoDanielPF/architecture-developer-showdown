@@ -1,6 +1,7 @@
 import { CATALOG } from '../content/catalog';
 import { clone, random } from '../domain/random';
-import type { Edge, Graph, Incident, Node, Runtime, Telemetry, World } from '../domain/types';
+import type { Edge, Graph, Node, Runtime, Telemetry, World } from '../domain/types';
+import {incident,reconcileIncidents,type IncidentDraft} from './incidents';
 
 const clamp=(n:number,min=0,max=1)=>Math.max(min,Math.min(max,n));
 const round=(n:number)=>Math.round(n*100)/100;
@@ -18,7 +19,7 @@ export function simulate(graph:Graph,world:World,previous:Runtime=emptyRuntime()
  const runtime=clone(previous),order=topological(graph),rng=random(seed);
  const flow=new Map(graph.nodes.map(n=>[n.id,{read:0,write:0,attack:0}]));
  const latency=new Map<string,number>(),success=new Map<string,number>(),edgeDelay=new Map<string,number>();
- const incidents:Incident[]=[],traces:string[]=[],metrics:Telemetry['nodes']=[];
+ const incidentDrafts:IncidentDraft[]=[],traces:string[]=[],metrics:Telemetry['nodes']=[];
  let cost=0,stale=0,duplicate=0,oversell=0,dbReads=0,dbWrites=0,payWrites=0,cacheReads=0,maliciousExposure=0,blocked=0,falsePositive=0,queueDelay=0,queueAccepted=0,expiredFraction=0,apiSeen=false;
  const root=graph.nodes.find(n=>n.kind==='client'); if(root)flow.set(root.id,{read:world.reads,write:world.writes,attack:world.attack});
  const outgoing=(id:string)=>graph.edges.filter(e=>e.from===id);
@@ -57,7 +58,7 @@ export function simulate(graph:Graph,world:World,previous:Runtime=emptyRuntime()
      const syncDelay=outgoing(node.id).reduce((m,e)=>Math.max(m,graph.nodes.find(n=>n.id===e.to)?.kind==='payment'?Math.min(world.paymentMs,e.config.timeout??world.paymentMs):25),25);
      const connections=f.write*syncDelay/1000+(f.read/100);
      const limit=has(node,'pool')?(cfg.poolSize??80):160;
-     if(connections>limit){cap*=clamp(limit/connections,.12,1);incidents.push({type:'Exaustão de conexões',nodeId:node.id,detail:`${round(connections)} conexões solicitadas para limite ${limit}.`});}
+     if(connections>limit){cap*=clamp(limit/connections,.12,1);incidentDrafts.push(incident('connection_exhaustion',node.id,`${round(connections)} conexões solicitadas para limite ${limit}.`,connections>limit*1.5?'critical':'warning'));}
    }
    if(has(node,'idempotency'))weighted*=1.04;
    for(const c of node.upgrades){if(c!=='scale'&&c!=='replica')unitCost+=CATALOG[c]?.infra??0;}
@@ -79,7 +80,7 @@ export function simulate(graph:Graph,world:World,previous:Runtime=emptyRuntime()
      const hit=hasOrigin(node.id)?clamp((cfg.ttl??45)/((cfg.ttl??45)+20)*(cfg.memory??2)/((cfg.memory??2)+1)*(1-world.hot*.2)*warm*(node.kind==='cdn'?.55:1),0,.88):0;
      const hits=f.read*hit*served;cacheReads+=hits;stale+=hits*clamp(1-Math.exp(-(cfg.ttl??45)*world.updateRate*.04))*.14;
      f.read-=hits;runtime.warm[node.id]=Math.min(1,warm+.25);
-     if(warm<.8&&f.read>700){incidents.push({type:'Cache stampede',nodeId:node.id,detail:`Cache frio: ${round(f.read)} misses/s seguem juntos para a origem.`});}
+     if(warm<.8&&f.read>700){incidentDrafts.push(incident('cache_stampede',node.id,`Cache frio: ${round(f.read)} misses/s seguem juntos para a origem.`,f.read>1400?'critical':'warning'));}
      traces.push(`${node.name}: ${round(hit*100)}% de hits nas leituras roteadas; ${round(f.read)} leituras/s seguem para a origem.`);
    }
    if(node.kind==='queue'){
@@ -94,7 +95,7 @@ export function simulate(graph:Graph,world:World,previous:Runtime=emptyRuntime()
      if(expired>0)traces.push(`${node.name}: ${round(expired)} tarefas expiraram após o limite de retenção de ${cfg.retention??120} s.`);
      runtime.queueBacklog[node.id]=Math.min(next,1e7);
      const delay=next/Math.max(consumer,1);queueDelay=Math.max(queueDelay,delay);queueAccepted+=f.write;
-     if(delay>world.completionSlo)incidents.push({type:'Backlog de fila',nodeId:node.id,detail:`Produção ${round(produced)}/s, consumo ${round(consumer)}/s; atraso ${round(delay)} s.`});
+     if(delay>world.completionSlo)incidentDrafts.push(incident('queue_backlog',node.id,`Produção ${round(produced)}/s, consumo ${round(consumer)}/s; atraso ${round(delay)} s.`,delay>world.completionSlo*2?'critical':'warning'));
      const ratio=clamp(consumer/Math.max(produced*amplification+old/60,1));f.read*=ratio;f.write*=ratio;
      traces.push(`${node.name}: ${round(next)} tarefas pendentes; conclusão estimada em ${round(delay)} s.`);
      if(!workers.length)traces.push(`${node.name}: nenhum Worker conectado; aceitar a tarefa não a conclui.`);
@@ -122,7 +123,7 @@ export function simulate(graph:Graph,world:World,previous:Runtime=emptyRuntime()
        const amplification=1+expectedError*retries/(1+backoff/500);
        traffic.read*=amplification;traffic.write*=amplification;traffic.attack*=amplification;
        duplicate+=traffic.write*expectedError*retries*.12*(has(dest,'idempotency')||has(node,'idempotency')?.02:1);
-       if(amplification>1.35&&backoff<200){incidents.push({type:'Retry storm',nodeId:node.id,detail:`${node.name} → ${dest.name}: carga ×${round(amplification)} com backoff ${backoff} ms.`});}
+       if(amplification>1.35&&backoff<200){incidentDrafts.push(incident('retry_storm',node.id,`${node.name} → ${dest.name}: carga ×${round(amplification)} com backoff ${backoff} ms.`,amplification>1.75?'critical':'warning',{type:'edge',id:edge.id}));}
        transport+=expectedError*backoff;
      }
      if(edge.policies.includes('breaker')&&world.paymentError>(edge.config.threshold??10)/100&&dest.kind==='payment'){
@@ -161,11 +162,13 @@ export function simulate(graph:Graph,world:World,previous:Runtime=emptyRuntime()
  const security=clamp(1-maliciousExposure/Math.max(world.attack,1)*.7-falsePositive/Math.max(world.reads+world.writes,1)*.5);
  const complexity=graph.nodes.filter(n=>n.kind!=='client').length*.8+activeEdges.length*.35+graph.nodes.reduce((s,n)=>s+n.upgrades.length*.3,0);
  cost+=complexity*4;
- if(stale/(world.reads+world.writes)>.012)incidents.push({type:'Dados desatualizados',nodeId:graph.nodes.find(n=>n.kind==='cache'||n.config.replica)?.id??'db',detail:`${round(stale)} leituras/s potencialmente desatualizadas por TTL ou atraso de replicação.`});
- if(oversell/Math.max(world.writes,1)>.03)incidents.push({type:'Disputa de estoque',nodeId:'db',detail:`${round(oversell)} escritas/s expostas à concorrência nas chaves mais disputadas.`});
- if(metrics.some(n=>n.utilization>1.5)&&!queueOnPath('api'))incidents.push({type:'Falha em cascata',nodeId:'api',detail:'Saturação em dependência síncrona propaga espera e erros ao caminho de aceitação.'});
+ const staleRatio=stale/Math.max(world.reads+world.writes,1),oversellRatio=oversell/Math.max(world.writes,1);
+ if(staleRatio>.012){const nodeId=graph.nodes.find(n=>n.kind==='cache'||n.config.replica)?.id??'db';incidentDrafts.push(incident('stale_data',nodeId,`${round(stale)} leituras/s potencialmente desatualizadas por TTL ou atraso de replicação.`,staleRatio>.05?'critical':'warning'));}
+ if(oversellRatio>.03)incidentDrafts.push(incident('inventory_race','db',`${round(oversell)} escritas/s expostas à concorrência nas chaves mais disputadas.`,oversellRatio>.1?'critical':'warning'));
+ if(metrics.some(n=>n.utilization>1.5)&&!queueOnPath('api'))incidentDrafts.push(incident('cascading_failure','api','Saturação em dependência síncrona propaga espera e erros ao caminho de aceitação.','critical'));
  traces.push(`Leituras atendidas: ${round(readSuccess*100)}%; pedidos concluídos: ${round(completion*100)}%. Caminhos ausentes não atendem operações.`);
  traces.push(`Custo $${round(cost)}/mês: componentes, políticas, tráfego e operação de ${graph.nodes.length} nós / ${graph.edges.length} conexões.`);
+ const incidents=reconcileIncidents(incidentDrafts,previous.history.at(-1),previous.history.length);
  const telemetry:Telemetry={p95:round(Math.min(60000,p95*(.99+rng()*.02))),throughput:round((world.reads+world.writes)*serviced),errorRate:round((1-serviced)*100),availability:round(serviced*100),consistency:round(consistency*100),security:round(security*100),completion:round(completion*100),cost:round(cost),complexity:round(complexity),blocked:round(blocked),falsePositive:round(falsePositive),nodes:metrics,incidents,traces,backlog:round(Object.values(runtime.queueBacklog).reduce((a,b)=>a+b,0)),observed:graph.nodes.some(n=>has(n,'observe')||has(n,'trace')),diagnostic:graph.nodes.some(n=>has(n,'trace'))};
  runtime.history.push(telemetry);return {telemetry,runtime};
 }

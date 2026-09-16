@@ -5,7 +5,7 @@ import { ECONOMY, applyCommand, draft } from '../rules';
 import { emptyRuntime, simulate } from '../simulation';
 import { runShowdown } from '../simulation/showdown';
 import { initialWorld, reveal, scenarioRun } from '../world';
-export const CONTENT_VERSION='0.1.0',ENGINE_VERSION='0.3.0';
+export const CONTENT_VERSION='0.1.0',ENGINE_VERSION='0.4.0';
 export function createMatch(seed:string,names:string[]=['Arquiteta A','Arquiteto B'],specialties:string[]=['balanced','resilient']):Match{
  if(!seed||seed.length>80)throw new Error('Seed deve ter entre 1 e 80 caracteres.');
  const worldState=initialWorld();

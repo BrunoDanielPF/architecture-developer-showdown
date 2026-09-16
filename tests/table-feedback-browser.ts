@@ -13,7 +13,7 @@ const app=await createApp({dataDir:await mkdtemp(path.join(tmpdir(),'showdown-ui
 const base=await app.listen({host:'127.0.0.1',port:0});
 const browser=await chromium.launch({channel:'msedge',headless:true,args:['--enable-webgl']});
 try{
- const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+ const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
  page.setDefaultTimeout(15000);
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  const session=await (await fetch(base+'/api/matches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seed:'flashcart-2026',names:['Alex','Sam']})})).json();
@@ -44,7 +44,7 @@ try{
  const centered=await node.boundingBox();assert.ok(Math.abs(centered!.x-nodeBefore!.x)<2);
  console.log('checking protocol');const label=page.locator('[data-target="data"]');
  assert.equal(await label.locator('strong').innerText(),'SQL');
- assert.ok(await label.locator('strong').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)>=10));
+ const protocolFont=await label.locator('strong').evaluate(e=>parseFloat(getComputedStyle(e).fontSize));assert.ok(protocolFont>=9,'O rótulo de protocolo deve respeitar o mínimo de 9 px do HUD compacto');
  await label.hover();assert.ok(await label.locator('.edge-description').isVisible());
  await page.screenshot({path:path.join(output,'desktop-protocol.png')});
  console.log('checking planning');await send('ready',0);await send('ready',1);
@@ -53,16 +53,28 @@ try{
  const briefing=page.getByRole('button',{name:'Entendi · ver tabuleiro'});if(await briefing.isVisible())await briefing.click();
  const v=await get(),card=v.player.hand.find((c:any)=>candidates(CATALOG[c.cardId],v.player.graph).some(t=>t.type==='node'));
  assert.ok(card);const target=candidates(CATALOG[card.cardId],v.player.graph).find(t=>t.type==='node')!;
- const dragCard=page.locator(`.hand-cards [data-card="${card.cardId}"]`);await dragCard.scrollIntoViewIfNeeded();
- const cb=(await dragCard.boundingBox())!,tb=(await page.locator(`[data-target="${target.id}"]`).boundingBox())!;
- await page.mouse.move(cb.x+cb.width/2,cb.y+cb.height/2);await page.mouse.down();await page.mouse.move(tb.x+tb.width/2,tb.y+tb.height/2,{steps:15});await page.mouse.up();
+ const dragCard=page.locator(`[data-card-instance="${card.uid}"]`);await dragCard.scrollIntoViewIfNeeded();
+ const targetLocator=page.locator(`[data-target="${target.id}"]`);
+ const handPositions=()=>page.locator('.hand-card-slot').evaluateAll(slots=>slots.map(slot=>slot.getBoundingClientRect().x));
+ const originalPositions=await handPositions();let cb=(await dragCard.boundingBox())!;
+ await page.mouse.move(cb.x+cb.width/2,cb.y+cb.height/2);await page.mouse.down();await page.mouse.move(cb.x+cb.width/2,cb.y+cb.height/2-24,{steps:4});
+ await page.locator('.drag-card-floating.dragging').waitFor();await page.mouse.move(300,350,{steps:12});
+ const collapsedPositions=await handPositions();assert.ok(collapsedPositions.some((x,index)=>Math.abs(x-originalPositions[index])>4),'As demais cartas devem fechar o espaço deixado pela carta arrastada');
+ await page.mouse.up();await page.locator('.drag-card-floating.returning').waitFor();assert.equal(await page.locator(`[data-card-instance="${card.uid}"]`).count(),1,'O retorno também deve reutilizar a mesma carta');
+ await page.locator('.drag-card-floating').waitFor({state:'hidden'});await page.waitForTimeout(320);
+ const restoredPositions=await handPositions();assert.ok(restoredPositions.every((x,index)=>Math.abs(x-originalPositions[index])<2),'A mão deve recompor o leque após uma soltura inválida');
+ cb=(await dragCard.boundingBox())!;const tb=(await targetLocator.boundingBox())!;
+ await page.mouse.move(cb.x+cb.width/2,cb.y+cb.height/2);await page.mouse.down();await page.mouse.move(cb.x+cb.width/2,cb.y+cb.height/2-24,{steps:4});
+ await page.locator('.drag-card-floating.dragging').waitFor();assert.ok(await page.locator('main.card-drag-dragging').isVisible(),'Arrastar deve ativar o estado visual da mesa');assert.equal(await page.locator('.card-inspector').count(),0,'A decisão só deve abrir depois de soltar');assert.equal(await page.locator(`[data-card-instance="${card.uid}"]`).count(),1,'O próprio card deve ser movido sem criar clone no DOM');assert.ok(await dragCard.isVisible(),'A mesma carta deve continuar visível enquanto acompanha o ponteiro');await page.waitForFunction(uid=>document.querySelector(`[data-hand-slot="${uid}"]`)!.getBoundingClientRect().width<4,card.uid);
+ await page.mouse.move(tb.x+tb.width/2,tb.y+tb.height/2,{steps:15});await page.waitForFunction(id=>document.querySelector(`[data-target="${id}"]`)?.classList.contains('drop-active'),target.id);assert.ok(await targetLocator.evaluate(element=>element.classList.contains('drop-active')),'O encaixe sob a carta deve pulsar');await page.screenshot({path:path.join(output,'desktop-card-drag.png')});await page.mouse.up();
+ await page.locator('.drag-card-floating').waitFor({state:'hidden'});
  console.log('checking drop');await page.getByRole('button',{name:'Preparar implantação'}).waitFor();
  assert.equal(await page.locator('.card-settings select').inputValue(),target.id);
  await page.getByRole('button',{name:'Preparar implantação'}).click();
  await page.waitForTimeout(700);
  await send('lock',0);await send('lock',1);
  await page.getByRole('region',{name:'Resultado da rodada 1'}).waitFor();
- await page.screenshot({path:path.join(output,'desktop-result.png')});
+ await page.screenshot({path:path.join(output,'desktop-result-drag-regression.png')});
  await send('advance',0);await send('advance',1);await page.reload();
  await page.getByRole('region',{name:'Resultado da rodada 1'}).waitFor();
  assert.match(await page.locator('.measurement-caption').innerText(),/Resultado R1/);
@@ -71,10 +83,10 @@ try{
   await page.setViewportSize({width,height:844});await page.waitForTimeout(1000);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Sem overflow horizontal');
   assert.equal(await cards.count(),(await get()).player.hand.length);
-  if(width===766){const strip=page.locator('.hand-cards');const left=await strip.evaluate(e=>e.scrollLeft);await page.getByRole('button',{name:'Ver próximas cartas'}).click();await page.waitForTimeout(500);assert.ok(await strip.evaluate(e=>e.scrollLeft)>left);}
+  if(width===766){assert.equal(await page.locator('.hand-navigation').evaluate(e=>getComputedStyle(e).display),'none','O leque compacto substitui a navegação lateral');}
   await page.screenshot({path:path.join(output,`${width}-round2.png`),fullPage:true});
  }
  assert.deepEqual(errors,[]);
- await writeFile(path.join(output,'checks.json'),JSON.stringify({passed:['zoom moves board and preserves hand bounds','pan moves board and preserves hand bounds','recenter restores camera','protocol name and description visible','card drag and placement','round result survives advance and reload','766px and 390px without horizontal overflow'],browserErrors:errors},null,2));
- console.log('Browser: zoom, pan, fixed hand, protocols, drag/drop, persistent results and responsive layouts passed.');
+ await writeFile(path.join(output,'checks.json'),JSON.stringify({passed:['zoom moves board and preserves hand bounds','pan moves board and preserves hand bounds','recenter restores camera','protocol name and description visible','single card DOM during drag','hand reflows on lift and invalid return','card drag and placement','round result survives advance and reload','766px and 390px without horizontal overflow'],browserErrors:errors},null,2));
+ console.log('Browser: zoom, pan, fixed hand, protocols, single-card drag/return, drop, persistent results and responsive layouts passed.');
 }catch(error){console.error(error);throw error;}finally{await browser.close();await app.close();}

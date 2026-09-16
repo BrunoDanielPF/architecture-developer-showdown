@@ -8,11 +8,14 @@ import {Icon} from './icons';
 import {CATALOG} from '../packages/content/catalog';
 import {protocolInfo} from './protocols';
 import {spreadTableGraph} from './table-layout';
+import IncidentLayer,{IncidentDock} from './IncidentLayer';
+import {BalancedTraffic,EdgePolicyHardware,NodeHardware} from './architecture-visuals';
+import {edgeVisualModel,nodeVisualModel} from './architecture-visual-model';
 const cameraOptions={position:[0,27,15.5] as [number,number,number],zoom:40,near:.1,far:100};
 const colors:Record<string,string>={client:'#b4c5d4',api:'#69b8cc',database:'#b498eb',payment:'#e8b365',cache:'#b498eb',queue:'#e8b365',worker:'#69b8cc',balancer:'#69b8cc',cdn:'#b498eb',storage:'#b498eb'};
 const kindLabels:Record<string,string>={client:'ENTRADA',api:'SERVIÇO',database:'DADOS',payment:'PAGAMENTO',cache:'CACHE',queue:'FILA',worker:'PROCESSAMENTO',balancer:'DISTRIBUIÇÃO',cdn:'ENTREGA',storage:'ARMAZENAMENTO'};
-type Props={focusArchitecture?:boolean;market?:ReactNode[];scenario?:ReactNode;graph:Graph;targets:Target[];selected?:string;onTarget:(id:string)=>void;onInspect:(id:string)=>void;telemetry?:Partial<Telemetry>;showActivity?:boolean;resetKey?:string};
-type ArchitectureModuleProps={node:Graph['nodes'][number];color:string;valid:boolean;hot:boolean;utilization?:number;events:{onClick:(e:React.MouseEvent)=>void;onDragOver:(e:React.DragEvent)=>void;onDrop:(e:React.DragEvent)=>void}};
+type Props={focusArchitecture?:boolean;market?:ReactNode[];scenario?:ReactNode;graph:Graph;targets:Target[];selected?:string;dragTarget?:string;dragging?:boolean;onTarget:(id:string)=>void;onInspect:(id:string)=>void;telemetry?:Partial<Telemetry>;showActivity?:boolean;resetKey?:string};
+type ArchitectureModuleProps={node:Graph['nodes'][number];color:string;valid:boolean;active:boolean;hot:boolean;utilization?:number;events:{onClick:(e:React.MouseEvent)=>void;onDragOver:(e:React.DragEvent)=>void;onDrop:(e:React.DragEvent)=>void}};
 function TrafficPacket({points}:{points:[number,number,number][]}){
  const mesh=useRef<THREE.Mesh>(null),[reduced]=useState(()=>matchMedia('(prefers-reduced-motion: reduce)').matches);
  const path=useMemo(()=>{const p=new THREE.CurvePath<THREE.Vector3>();for(let i=1;i<points.length;i++)p.add(new THREE.LineCurve3(new THREE.Vector3(...points[i-1]),new THREE.Vector3(...points[i])));return p;},[JSON.stringify(points)]);
@@ -61,24 +64,25 @@ function BoardMarkings(){
    {[-6.9,-2.3,2.3,6.9].map(x=><mesh key={`b-${x}`} position={[x,.47,-6.38]}><boxGeometry args={[.09,.035,.34]}/><meshBasicMaterial color="#63dce4"/></mesh>)}
  </group>;
 }
-function ArchitectureModule({node,color,valid,hot,utilization,events}:ArchitectureModuleProps){
- const statusColor=valid?'#f1c66d':hot?'#e77f6d':color;
+function ArchitectureModule({node,color,valid,active,hot,utilization,events}:ArchitectureModuleProps){
+ const statusColor=valid?'#f1c66d':hot?'#e77f6d':color,visual=nodeVisualModel(node),width=visual.cluster?2.7:2.2,depth=visual.cluster?1.9:1.62;
  return <group position={[node.x,.5,node.z]}>
-   <RoundedBox args={[2.2,.38,1.62]} radius={.15} castShadow receiveShadow>
+   <RoundedBox args={[width,.38,depth]} radius={.15} castShadow receiveShadow>
      <meshStandardMaterial color="#102a37" emissive={statusColor} emissiveIntensity={valid?.2:.055} metalness={.48} roughness={.42}/>
    </RoundedBox>
-   <mesh position={[0,.06,.814]} castShadow><boxGeometry args={[1.5,.075,.035]}/><meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={valid?.85:.45} metalness={.35} roughness={.3}/></mesh>
-   <mesh position={[-1.105,.01,0]} rotation={[0,0,Math.PI/2]}><cylinderGeometry args={[.08,.08,.08,12]}/><meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={.35}/></mesh>
-   <mesh position={[1.105,.01,0]} rotation={[0,0,Math.PI/2]}><cylinderGeometry args={[.08,.08,.08,12]}/><meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={.35}/></mesh>
-   <Html position={[0,.205,0]} transform rotation={[-Math.PI/2,0,0]} distanceFactor={5} center zIndexRange={[12,1]}><button data-target={node.id} data-node={node.kind} className={`node-label ${valid?'valid':''} ${hot?'saturated':''}`} style={{'--node-color':statusColor} as React.CSSProperties} {...events} aria-label={`Componente ${node.name}`}>
+   <mesh position={[0,.06,depth/2+.004]} castShadow><boxGeometry args={[visual.cluster?1.9:1.5,.075,.035]}/><meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={valid?.85:.45} metalness={.35} roughness={.3}/></mesh>
+   <mesh position={[-width/2-.005,.01,0]} rotation={[0,0,Math.PI/2]}><cylinderGeometry args={[.08,.08,.08,12]}/><meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={.35}/></mesh>
+   <mesh position={[width/2+.005,.01,0]} rotation={[0,0,Math.PI/2]}><cylinderGeometry args={[.08,.08,.08,12]}/><meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={.35}/></mesh>
+   <NodeHardware node={node} color={statusColor}/>
+   <Html position={[0,.48,visual.cluster?.68:0]} transform rotation={[-Math.PI/2,0,0]} distanceFactor={5} center zIndexRange={[12,1]}><button data-target={node.id} data-node={node.kind} data-instance-count={visual.instanceCount} data-node-role={visual.role} data-node-effects={visual.effects.join(' ')} className={`node-label ${visual.cluster?'clustered':''} ${valid?'valid':''} ${active?'drop-active':''} ${hot?'saturated':''}`} style={{'--node-color':statusColor} as React.CSSProperties} {...events} aria-label={`Componente ${node.name}${visual.cluster?`, ${visual.instanceCount} instâncias`:''}`}>
      <Icon name={node.kind} size={24}/><strong>{node.name}</strong><span className="node-kind">{kindLabels[node.kind]??'COMPONENTE'}</span>
-     {node.config.instances>1&&<span className="instances">×{node.config.instances}</span>}
+     {visual.cluster&&<span className="instances">{visual.instanceCount} INSTÂNCIAS</span>}
      {node.upgrades.length>0&&<div className="node-upgrades">{node.upgrades.map(c=><span key={c} title={CATALOG[c]?.name}><Icon name={c} size={11}/></span>)}</div>}
      {hot&&utilization!==undefined&&<small>{Math.round(utilization*100)}% carga</small>}
    </button></Html>
  </group>;
 }
-function Scene({graph,targets,onTarget,onInspect,telemetry,showActivity,selected,resetKey,market=[],scenario,resetControl,focusArchitecture}:Props&{resetControl:{current:(()=>void)|null}}){
+function Scene({graph,targets,onTarget,onInspect,telemetry,showActivity,selected,dragTarget,resetKey,market=[],scenario,resetControl,focusArchitecture}:Props&{resetControl:{current:(()=>void)|null}}){
  const controls=useRef<any>(null);const {camera,size}=useThree();const tableGraph=useMemo(()=>spreadTableGraph(graph),[graph]);
  useEffect(()=>{
   const resetCamera=()=>{
@@ -113,18 +117,22 @@ function Scene({graph,targets,onTarget,onInspect,telemetry,showActivity,selected
      const direction=new THREE.Vector3(b.x-a.x,0,b.x===a.x?b.z-a.z:0).normalize();
      const arrowRotation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction);
      const color=ids.has(e.id)?'#ffd38b':e.protocol==='async'?'#d7a866':'#679ca9';
+     const visual=edgeVisualModel(e,tableGraph),midpoint:[number,number,number]=[(a.x+b.x)/2,.53,(a.z+b.z)/2];
      return <group key={e.id}>
        <Line points={points} color={color} lineWidth={ids.has(e.id)?4:2.4} dashed={e.protocol==='async'} dashSize={.16} gapSize={.1}/>
-       {showActivity&&<TrafficPacket points={points}/>}
+       {showActivity&&!visual.balanced&&<TrafficPacket points={points}/>}
+       <BalancedTraffic edge={e} graph={tableGraph} color={color}/>
+       <EdgePolicyHardware edge={e} position={midpoint}/>
        <mesh position={[b.x-direction.x*.95,.49,b.z-direction.z*.95]} quaternion={arrowRotation}><coneGeometry args={[.10,.25,3]}/><meshBasicMaterial color={color}/></mesh>
-       <Html position={[(a.x+b.x)/2,.7,(a.z+b.z)/2]} center zIndexRange={[10,0]}><button data-target={e.id} className={`edge-label ${ids.has(e.id)?'valid':''}`} {...targetEvents(e.id)} title={`${info.name}: ${info.description} ${a.name} → ${b.name}`} aria-label={`${info.name}: ${a.name} para ${b.name}. ${info.description}`}>
+       <Html position={[(a.x+b.x)/2,.7,(a.z+b.z)/2]} center zIndexRange={[10,0]}><button data-target={e.id} data-balanced-lanes={visual.laneCount} data-edge-effects={visual.effects.join(' ')} className={`edge-label ${ids.has(e.id)?'valid':''} ${dragTarget===e.id?'drop-active':''}`} {...targetEvents(e.id)} title={`${info.name}: ${info.description} ${a.name} → ${b.name}`} aria-label={`${info.name}: ${a.name} para ${b.name}. ${info.description}`}>
          <strong>{info.name}</strong><span>→</span><span className="edge-description">{info.description}</span>{e.read!==100||e.write!==100?<small>R {Math.round(e.read)} · W {Math.round(e.write)}</small>:null}
          {e.policies.length>0&&<i>{e.policies.map(c=>CATALOG[c]?.name).join(' · ')}</i>}
        </button></Html>
      </group>;
    })}
-   {tableGraph.nodes.map(n=>{const metric=telemetry?.nodes?.find(m=>m.id===n.id);return <ArchitectureModule key={n.id} node={n} color={colors[n.kind]} valid={ids.has(n.id)} hot={Boolean(showActivity&&metric&&metric.utilization>1)} utilization={metric?.utilization} events={targetEvents(n.id)}/>;})}
-   {slots.filter(s=>ids.has(s.id)).map(s=><group key={s.id} position={[s.x,.5,s.z]}><mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.3,.34,24]}/><meshBasicMaterial color="#e5bd7a" transparent opacity={.55}/></mesh><Html center position={[0,.15,0]} zIndexRange={[8,0]}><button data-target={s.id} className="slot-target" {...targetEvents(s.id)} aria-label={`Espaço ${Number(s.id.split(':')[1])+1}`}>+</button></Html></group>)}
+   {tableGraph.nodes.map(n=>{const metric=telemetry?.nodes?.find(m=>m.id===n.id);return <ArchitectureModule key={n.id} node={n} color={colors[n.kind]} valid={ids.has(n.id)} active={dragTarget===n.id} hot={Boolean(showActivity&&metric&&metric.utilization>1)} utilization={metric?.utilization} events={targetEvents(n.id)}/>;})}
+   {slots.filter(s=>ids.has(s.id)).map(s=><group key={s.id} position={[s.x,.5,s.z]}><mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.3,.34,24]}/><meshBasicMaterial color="#e5bd7a" transparent opacity={.55}/></mesh><Html center position={[0,.15,0]} zIndexRange={[8,0]}><button data-target={s.id} className={`slot-target ${dragTarget===s.id?'drop-active':''}`} {...targetEvents(s.id)} aria-label={`Espaço ${Number(s.id.split(':')[1])+1}`}>+</button></Html></group>)}
+   {showActivity&&telemetry?.incidents?.length?<IncidentLayer graph={tableGraph} incidents={telemetry.incidents}/>:null}
    </group>
    {market.map((card,i)=><group key={i} position={[10.25,.57,-3.8+i*1.95]} rotation={[0,-.12,0]}>
      <RoundedBox args={[2.35,.1,2.8]} radius={.07} castShadow><meshStandardMaterial color="#6889a2" metalness={.5}/></RoundedBox>
@@ -137,8 +145,9 @@ function Scene({graph,targets,onTarget,onInspect,telemetry,showActivity,selected
 }
 export default function Table(props:Props){
  const resetControl=useRef<(()=>void)|null>(null);
- return <div className="table-viewport" data-testid="table-3d" onDragOver={e=>e.preventDefault()}>
+ return <div className={`table-viewport ${props.dragging?'drop-mode':''}`} data-testid="table-3d" data-drop-mode={props.dragging||undefined} onDragOver={e=>e.preventDefault()}>
    <Canvas shadows orthographic camera={cameraOptions} dpr={[1,1.7]} gl={{antialias:true}} fallback={<p>Este navegador precisa de WebGL para exibir a mesa 3D.</p>}><Suspense fallback={null}><Scene {...props} resetControl={resetControl}/></Suspense></Canvas>
+   {props.showActivity&&props.telemetry?.incidents?.length?<IncidentDock incidents={props.telemetry.incidents}/>:null}
    <div className="table-controls"><span>Arraste um espaço vazio para mover · use a roda para zoom</span><button className="text-button" onClick={()=>resetControl.current?.()}>Centralizar mesa</button></div>
  </div>;
 }
